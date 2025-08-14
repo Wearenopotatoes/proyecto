@@ -1,0 +1,36 @@
+<!-- templates/index.html -->
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>LoRaLink - Enlace seguro y autónomo. </title>
+    <!-- Cargar el archivo CSS desde la carpeta static -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>LoRaLink - Comunicación sin límites, sin red, sin miedo. </h1>
+
+        <!-- Formulario para enviar mensajes -->
+        <form action="/send" method="POST">
+            <input type="text" name="sender" placeholder="Nombre del remitente" required>
+            <textarea name="content" placeholder="Escribe tu mensaje..." required></textarea>
+            <input type="submit" value="Enviar mensaje">
+        </form>
+
+        <h2>📬 Mensajes recibidos</h2>
+        <div class="messages">
+            <!-- Mostrar cada mensaje -->
+            {% for msg in messages %}
+                <div class="message">
+                    <strong>{{ msg.sender }}</strong> <em>{{ msg.timestamp }}</em>
+                    <p>{{ msg.content }}</p>
+                </div>
+            {% else %}
+                <p>No hay mensajes aún.</p>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
