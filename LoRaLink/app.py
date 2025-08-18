@@ -1,57 +1,39 @@
-# app.py
-
-from flask import Flask, render_template, request, redirect
+from flask import Flask, request, jsonify
 import json
-from datetime import datetime
+import os
 
-# Crear la aplicación Flask
 app = Flask(__name__)
 
-# Ruta principal que muestra los mensajes
-@app.route('/')
-def index():
-    # Cargar mensajes desde el archivo JSON
-    try:
-        with open('messages.json', 'r') as f:
-            messages = json.load(f)
-    except FileNotFoundError:
-        messages = []
+MESSAGES_FILE = "messages.json"
 
-    # Renderizar la plantilla HTML y pasarle los mensajes
-    return render_template('index.html', messages=messages)
-
-# Ruta para enviar un nuevo mensaje
-@app.route('/send', methods=['POST'])
-def send():
-    # Obtener datos del formulario
-    sender = request.form['sender']
-    content = request.form['content']
-    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-    # Crear el nuevo mensaje
-    new_message = {
-        'sender': sender,
-        'content': content,
-        'timestamp': timestamp
-    }
-
-    # Cargar mensajes existentes
-    try:
-        with open('messages.json', 'r') as f:
-            messages = json.load(f)
-    except FileNotFoundError:
-        messages = []
-
-    # Agregar el nuevo mensaje
-    messages.append(new_message)
-
-    # Guardar los mensajes actualizados
-    with open('messages.json', 'w') as f:
+# Función para guardar mensajes en JSON
+def save_message(message):
+    messages = []
+    if os.path.exists(MESSAGES_FILE):
+        with open(MESSAGES_FILE, "r") as f:
+            try:
+                messages = json.load(f)
+            except json.JSONDecodeError:
+                messages = []
+    messages.append(message)
+    with open(MESSAGES_FILE, "w") as f:
         json.dump(messages, f, indent=4)
 
-    # Redirigir al inicio
-    return redirect('/')
-    
-# Ejecutar la app
+# Endpoint para recibir mensajes
+@app.route('/data', methods=['POST'])
+def receive_data():
+    data = request.get_json()
+    if not data:
+        return jsonify({"status": "error", "message": "No se recibió JSON"}), 400
+
+    save_message(data)
+    print("Mensaje recibido:", data)
+    return jsonify({"status": "ok", "received": data}), 200
+
+# Endpoint opcional para chequear si está vivo
+@app.route('/ping', methods=['GET'])
+def ping():
+    return jsonify({"status": "alive"}), 200
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000)
