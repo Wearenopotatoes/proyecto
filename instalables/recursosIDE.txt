@@ -1,6 +1,2 @@
-thonny-4.1.7
-
-y puertos anexados
-
-
-Flashear la placa e instalar micropython para ESP32 S3
+Heltecunofficial
+radiolib
