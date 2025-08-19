@@ -1,0 +1,21 @@
+[
+    {
+        "sender": "LoRaLink",
+        "content": "Choque de autos en San Miguel Tepezontes",
+        "timestamp": "2025-08-13 22:06:25",
+        "status": "pendiente"
+    },
+    {
+        "sender": "LoRaLink",
+        "content": "ya llego tu tiburon",
+        "timestamp": "2025-08-14 07:30:06",
+        "status": "atendida"
+    },
+    {
+        "sender": "LoRaLink",
+        "content": "Incendio reportado en Santa Tecla",
+        "timestamp": "2025-08-19 13:02:45",
+        "lat": 13.674,
+        "lng": -89.285
+    }
+]
