@@ -1,0 +1,20 @@
+[
+    {
+        "id": 2,
+        "type": "Incendio",
+        "timestamp": "2025-08-28 00:03:07",
+        "lat": 13.69,
+        "lon": -89.19,
+        "status": "atendido",
+        "unit_assigned": "Unidad 1"
+    },
+    {
+        "id": 3,
+        "type": "Atropello",
+        "timestamp": "2025-08-28 00:03:07",
+        "lat": 13.7,
+        "lon": -89.23,
+        "status": "atendido",
+        "unit_assigned": "Unidad 2"
+    }
+]
