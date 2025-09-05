@@ -7,7 +7,7 @@
     },
     {
         "name": "Unidad 2",
-        "available": true,
+        "available": false,
         "lat": null,
         "lon": null
     },
