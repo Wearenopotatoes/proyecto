@@ -1,0 +1,50 @@
+[
+    {
+        "name": "Unidad 1",
+        "available": true,
+        "lat": null,
+        "lon": null
+    },
+    {
+        "name": "Unidad 2",
+        "available": true,
+        "lat": null,
+        "lon": null
+    },
+    {
+        "name": "Unidad 3",
+        "available": true,
+        "lat": null,
+        "lon": null
+    },
+    {
+        "name": "MOV-01",
+        "available": true,
+        "lat": null,
+        "lon": null
+    },
+    {
+        "name": "AMB-05",
+        "available": true,
+        "lat": null,
+        "lon": null
+    },
+    {
+        "name": "BR-02",
+        "available": true,
+        "lat": null,
+        "lon": null
+    },
+    {
+        "name": "SUP-01",
+        "available": true,
+        "lat": null,
+        "lon": null
+    },
+    {
+        "name": "PAT-15",
+        "available": true,
+        "lat": null,
+        "lon": null
+    }
+]
