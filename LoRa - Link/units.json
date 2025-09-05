@@ -1,20 +1,7 @@
 [
-    {
-        "name": "Unidad 1",
-        "available": true,
-        "lat": null,
-        "lon": null
-    },
-    {
-        "name": "Unidad 2",
-        "available": true,
-        "lat": null,
-        "lon": null
-    },
-    {
-        "name": "Unidad 3",
-        "available": true,
-        "lat": null,
-        "lon": null
-    }
+    "MOV-01",
+    "AMB-05",
+    "BR-02",
+    "SUP-01",
+    "PAT-15"
 ]

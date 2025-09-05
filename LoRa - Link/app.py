@@ -1,138 +1,88 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, jsonify, render_template, request
+import csv
 import json
 import os
-from datetime import datetime
 
 app = Flask(__name__)
 
-ALERTS_FILE = "alerts.json"
-UNITS_FILE = "units.json"
+# Nombres de nuestros archivos de datos
+ARCHIVO_CSV = 'reportes.csv'
+ARCHIVO_ESTADOS_JSON = 'estados.json'
+ARCHIVO_UNIDADES_JSON = 'units.json'
 
-# ---------- helpers ----------
-def load_json(path, default):
-    if not os.path.exists(path):
-        return default
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+# --- Funciones de Ayuda ---
+def leer_estados():
+    """Lee el archivo de estados y lo devuelve como un diccionario."""
+    if not os.path.exists(ARCHIVO_ESTADOS_JSON):
+        return {}
+    try:
+        with open(ARCHIVO_ESTADOS_JSON, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except (json.JSONDecodeError, FileNotFoundError):
+        return {}
 
-def save_json(path, data):
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
+def escribir_estados(estados):
+    """Escribe el diccionario de estados en el archivo JSON."""
+    with open(ARCHIVO_ESTADOS_JSON, 'w', encoding='utf-8') as f:
+        json.dump(estados, f, indent=4)
 
-def get_unit(units, name):
-    for u in units:
-        if u["name"] == name:
-            return u
-    return None
+# --- Rutas de la Aplicación ---
 
-# ---------- routes ----------
-@app.route("/")
-def index():
-    alerts = load_json(ALERTS_FILE, [])
-    units = load_json(UNITS_FILE, [])
-    alerts_sorted = sorted(alerts, key=lambda x: x.get("id", 0))
-    return render_template("index.html", alerts=alerts_sorted, units=units)
+@app.route('/')
+def dashboard():
+    """Sirve la página principal del dashboard."""
+    return render_template('index.html')
 
-@app.route("/assign_unit", methods=["POST"])
-def assign_unit():
-    data = request.get_json(force=True)
-    alert_id = int(data.get("alert_id"))
-    unit_name = data.get("unit_name")
+@app.route('/units.json')
+def obtener_unidades():
+    """Sirve la lista de unidades desde units.json."""
+    try:
+        with open(ARCHIVO_UNIDADES_JSON, 'r', encoding='utf-8') as f:
+            unidades = json.load(f)
+            return jsonify(unidades)
+    except FileNotFoundError:
+        return jsonify([])
 
-    alerts = load_json(ALERTS_FILE, [])
-    units = load_json(UNITS_FILE, [])
+@app.route('/api/datos')
+def obtener_datos():
+    """Lee los reportes del CSV, les añade su estado/unidad y los devuelve."""
+    estados = leer_estados()
+    reportes = []
+    try:
+        with open(ARCHIVO_CSV, mode='r', newline='', encoding='utf-8') as csv_file:
+            csv_reader = csv.DictReader(csv_file)
+            for fila in csv_reader:
+                reporte_id = fila.get('timestamp')
+                if reporte_id:
+                    estado_info = estados.get(reporte_id, {})
+                    fila['estado'] = estado_info.get('estado', 'Nuevo')
+                    fila['unidad'] = estado_info.get('unidad', 'Sin asignar')
+                    reportes.append(fila)
+    except FileNotFoundError:
+        return jsonify([])
+    return jsonify(sorted(reportes, key=lambda x: x.get('timestamp', '0'), reverse=True))
 
-    alert = next((a for a in alerts if a.get("id") == alert_id), None)
-    if not alert:
-        return jsonify({"error": "alert not found"}), 404
+@app.route('/api/actualizar_estado', methods=['POST'])
+def actualizar_estado():
+    """Actualiza el estado y/o la unidad de un reporte."""
+    data = request.json
+    reporte_id = data.get('id')
+    nuevo_estado = data.get('estado')
+    unidad_asignada = data.get('unidad')
 
-    unit = get_unit(units, unit_name)
-    if not unit:
-        return jsonify({"error": "unit not found"}), 404
-    if not unit.get("available", True):
-        return jsonify({"error": "unit not available"}), 400
+    if not reporte_id or not nuevo_estado:
+        return jsonify({'error': 'Faltan datos'}), 400
 
-    alert["status"] = "en_camino"
-    alert["unit_assigned"] = unit_name
-    unit["available"] = False
+    estados = leer_estados()
+    estado_actual = estados.get(reporte_id, {})
+    estado_actual['estado'] = nuevo_estado
+    if unidad_asignada:
+        estado_actual['unidad'] = unidad_asignada
+    
+    estados[reporte_id] = estado_actual
+    escribir_estados(estados)
+    
+    return jsonify({'success': True})
 
-    save_json(ALERTS_FILE, alerts)
-    save_json(UNITS_FILE, units)
-    return jsonify({"status": "ok"})
-
-@app.route("/mark_attended", methods=["POST"])
-def mark_attended():
-    data = request.get_json(force=True)
-    alert_id = int(data.get("alert_id"))
-
-    alerts = load_json(ALERTS_FILE, [])
-    units = load_json(UNITS_FILE, [])
-
-    alert = next((a for a in alerts if a.get("id") == alert_id), None)
-    if not alert:
-        return jsonify({"error": "alert not found"}), 404
-
-    unit_name = alert.get("unit_assigned")
-    if unit_name:
-        unit = get_unit(units, unit_name)
-        if unit:
-            unit["available"] = True
-
-    alert["status"] = "atendido"
-
-    save_json(ALERTS_FILE, alerts)
-    save_json(UNITS_FILE, units)
-    return jsonify({"status": "ok"})
-
-@app.route("/delete_alert/<int:alert_id>", methods=["DELETE"])
-def delete_alert(alert_id):
-    alerts = load_json(ALERTS_FILE, [])
-    alerts = [a for a in alerts if a.get("id") != alert_id]
-    save_json(ALERTS_FILE, alerts)
-    return jsonify({"status": "deleted"})
-
-@app.route("/clear_alerts", methods=["DELETE"])
-def clear_alerts():
-    units = load_json(UNITS_FILE, [])
-    for u in units:
-        u["available"] = True
-    save_json(UNITS_FILE, units)
-    save_json(ALERTS_FILE, [])
-    return jsonify({"status": "cleared"})
-
-@app.route("/update_unit_location", methods=["POST"])
-def update_unit_location():
-    data = request.get_json(force=True)
-    name = data.get("name")
-    lat = data.get("lat")
-    lon = data.get("lon")
-    units = load_json(UNITS_FILE, [])
-    unit = next((u for u in units if u["name"] == name), None)
-    if not unit:
-        units.append({"name": name, "available": True, "lat": lat, "lon": lon})
-    else:
-        unit["lat"] = lat
-        unit["lon"] = lon
-    save_json(UNITS_FILE, units)
-    return jsonify({"status": "ok"})
-
-@app.route("/add_alert", methods=["POST"])
-def add_alert():
-    data = request.get_json(force=True)
-    alerts = load_json(ALERTS_FILE, [])
-    new_id = (max([a.get("id", 0) for a in alerts]) + 1) if alerts else 1
-    alert = {
-        "id": new_id,
-        "type": data.get("type", "Accidente"),
-        "timestamp": data.get("timestamp") or datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "lat": float(data.get("lat")) if data.get("lat") is not None else None,
-        "lon": float(data.get("lon")) if data.get("lon") is not None else None,
-        "status": data.get("status", "accidente"),
-        "unit_assigned": None
-    }
-    alerts.append(alert)
-    save_json(ALERTS_FILE, alerts)
-    return jsonify({"status": "ok", "id": new_id})
-
-if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
