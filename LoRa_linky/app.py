@@ -12,7 +12,7 @@ ALERTS_HEADERS = ["timestamp", "tipo_accidente", "latitud", "longitud", "estado"
 
 # ---------- helpers ----------
 def load_alerts_from_csv(path):
-    """Loads alerts from a CSV file."""
+    """Carga las alertas desde un CSV y convierte las unidades en una lista."""
     alerts = []
     if not os.path.exists(path):
         return alerts
@@ -20,6 +20,10 @@ def load_alerts_from_csv(path):
         with open(path, mode='r', newline='', encoding='utf-8') as csv_file:
             csv_reader = csv.DictReader(csv_file)
             for row in csv_reader:
+                # Convertir el texto de unidades (separado por '|') en una lista.
+                units_str = row.get("unidad", "")
+                unit_list = units_str.split('|') if units_str and units_str != "None" else []
+                
                 alert = {
                     "id": row.get("timestamp"),
                     "type": row.get("tipo_accidente"),
@@ -27,7 +31,7 @@ def load_alerts_from_csv(path):
                     "lat": float(row.get("latitud")) if row.get("latitud") else None,
                     "lon": float(row.get("longitud")) if row.get("longitud") else None,
                     "status": row.get("estado", "accidente"),
-                    "unit_assigned": row.get("unidad", None)
+                    "unit_assigned": unit_list # Ahora es una lista
                 }
                 alerts.append(alert)
     except Exception as e:
@@ -36,25 +40,27 @@ def load_alerts_from_csv(path):
     return alerts
 
 def save_alerts_to_csv(path, alerts):
-    """Saves alerts to a CSV file."""
-    with open(path, mode='w', newline='', encoding='utf-8') as csv_file:
+    """Guarda las alertas en un CSV, uniendo la lista de unidades en un texto."""
+    with open(path, mode='w', newline='', encoding='utf--8') as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=ALERTS_HEADERS)
         writer.writeheader()
         for alert in alerts:
+            # Unir la lista de unidades en un solo string separado por '|'.
+            unit_list = alert.get("unit_assigned", [])
+            units_str = "|".join(unit_list) if unit_list else None
+
             row = {
                 "timestamp": alert.get("id"),
                 "tipo_accidente": alert.get("type"),
                 "latitud": alert.get("lat"),
                 "longitud": alert.get("lon"),
                 "estado": alert.get("status"),
-                "unidad": alert.get("unit_assigned")
+                "unidad": units_str
             }
             writer.writerow(row)
 
 def load_json(path, default):
-    """Loads a JSON file, returning a default if it doesn't exist."""
-    if not os.path.exists(path):
-        return default
+    if not os.path.exists(path): return default
     try:
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
@@ -62,28 +68,30 @@ def load_json(path, default):
         return default
 
 def save_json(path, data):
-    """Saves data to a JSON file."""
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
 def get_unit(units, name):
-    """Finds a unit by its name."""
     for u in units:
         if isinstance(u, dict) and u.get("name") == name:
             return u
     return None
 
 # ---------- routes ----------
-@app.route("/")
-def index():
-    """Serves the main dashboard page."""
+
+@app.route("/api/dashboard_data")
+def dashboard_data():
     alerts = load_alerts_from_csv(ALERTS_FILE)
     units = load_json(UNITS_FILE, [])
-    return render_template("index.html", alerts=alerts, units=units)
+    sorted_alerts = sorted(alerts, key=lambda x: x.get('id', '0'), reverse=True)
+    return jsonify({"alerts": sorted_alerts, "units": units})
+
+@app.route("/")
+def index():
+    return render_template("index.html")
 
 @app.route("/assign_unit", methods=["POST"])
 def assign_unit():
-    """Assigns an available unit to an alert."""
     data = request.get_json(force=True)
     alert_id = data.get("alert_id")
     unit_name = data.get("unit_name")
@@ -92,17 +100,15 @@ def assign_unit():
     units = load_json(UNITS_FILE, [])
 
     alert = next((a for a in alerts if a.get("id") == alert_id), None)
-    if not alert:
-        return jsonify({"error": "alert not found"}), 404
-
+    if not alert: return jsonify({"error": "alert not found"}), 404
     unit = get_unit(units, unit_name)
-    if not unit:
-        return jsonify({"error": "unit not found"}), 404
-    if not unit.get("available", True):
-        return jsonify({"error": "unit not available"}), 400
-
+    if not unit: return jsonify({"error": "unit not found"}), 404
+    if not unit.get("available", True): return jsonify({"error": "unit not available"}), 400
+    
+    if unit_name not in alert["unit_assigned"]:
+        alert["unit_assigned"].append(unit_name)
+    
     alert["status"] = "en_camino"
-    alert["unit_assigned"] = unit_name
     unit["available"] = False
 
     save_alerts_to_csv(ALERTS_FILE, alerts)
@@ -111,7 +117,6 @@ def assign_unit():
 
 @app.route("/mark_attended", methods=["POST"])
 def mark_attended():
-    """Marks an alert as attended and makes the assigned unit available again."""
     data = request.get_json(force=True)
     alert_id = data.get("alert_id")
 
@@ -119,14 +124,14 @@ def mark_attended():
     units = load_json(UNITS_FILE, [])
 
     alert = next((a for a in alerts if a.get("id") == alert_id), None)
-    if not alert:
-        return jsonify({"error": "alert not found"}), 404
+    if not alert: return jsonify({"error": "alert not found"}), 404
 
-    unit_name = alert.get("unit_assigned")
-    if unit_name:
-        unit = get_unit(units, unit_name)
-        if unit:
-            unit["available"] = True
+    assigned_units = alert.get("unit_assigned", [])
+    if isinstance(assigned_units, list):
+        for unit_name in assigned_units:
+            unit_to_release = get_unit(units, unit_name)
+            if unit_to_release:
+                unit_to_release["available"] = True
 
     alert["status"] = "atendido"
     
@@ -136,7 +141,6 @@ def mark_attended():
 
 @app.route("/delete_alert/<alert_id>", methods=["DELETE"])
 def delete_alert(alert_id):
-    """Deletes a specific alert by its ID."""
     alerts = load_alerts_from_csv(ALERTS_FILE)
     alerts = [a for a in alerts if a.get("id") != alert_id]
     save_alerts_to_csv(ALERTS_FILE, alerts)
@@ -144,7 +148,6 @@ def delete_alert(alert_id):
 
 @app.route("/clear_alerts", methods=["DELETE"])
 def clear_alerts():
-    """Deletes all alerts and makes all units available."""
     units = load_json(UNITS_FILE, [])
     for u in units:
         if isinstance(u, dict):
@@ -155,7 +158,6 @@ def clear_alerts():
 
 @app.route("/update_unit_location", methods=["POST"])
 def update_unit_location():
-    """Updates the location of a unit or adds a new one."""
     data = request.get_json(force=True)
     name = data.get("name")
     lat = data.get("lat")
@@ -172,7 +174,6 @@ def update_unit_location():
 
 @app.route("/add_alert", methods=["POST"])
 def add_alert():
-    """Adds a new alert to the system."""
     data = request.get_json(force=True)
     alerts = load_alerts_from_csv(ALERTS_FILE)
     new_id = str(int(datetime.now().timestamp()))
@@ -183,7 +184,7 @@ def add_alert():
         "lat": float(data.get("lat")) if data.get("lat") is not None else None,
         "lon": float(data.get("lon")) if data.get("lon") is not None else None,
         "status": data.get("status", "accidente"),
-        "unit_assigned": None
+        "unit_assigned": [] # Empieza como una lista vacía
     }
     alerts.append(alert)
     save_alerts_to_csv(ALERTS_FILE, alerts)

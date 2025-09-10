@@ -1,0 +1,19 @@
+# 1. Ignorar la carpeta de teselas del mapa offline
+#    Le diremos a nuestra herramienta que descargue los mapas aquí.
+map_tiles/
+
+# 2. Ignorar archivos de datos generados por la aplicación en tiempo real
+#    El repositorio debe tener el código, no los datos que genera.
+reportes.csv
+estados.json
+
+# 3. Ignorar archivos de entorno y caché de Python (Buena práctica)
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# 4. Ignorar archivos específicos del sistema operativo o editores
+.DS_Store
+.vscode/
+.idea/

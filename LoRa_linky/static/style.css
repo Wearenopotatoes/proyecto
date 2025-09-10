@@ -20,12 +20,13 @@ html,body{ height:100%; }
 body{
   margin:0;
   background: radial-gradient(1200px 600px at 10% -10%, rgba(45,125,255,.15), transparent 60%),
-              radial-gradient(1200px 600px at 110% 0%, rgba(155,92,255,.15), transparent 60%),
-              var(--bg);
+            radial-gradient(1200px 600px at 110% 0%, rgba(155,92,255,.15), transparent 60%),
+            var(--bg);
   color: var(--text);
   font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   font-size:16px;
   line-height:1.4;
+  overflow: hidden;
 }
 
 /* ====== Utilities ====== */
@@ -54,43 +55,15 @@ body{
   color: white;
 }
 
-.btn.primary-outline {
-  color: var(--brand2);
-  border-color: var(--brand2);
-}
-
-.btn.primary-outline:hover {
-  background-color: var(--brand2);
-  color: white;
-}
-
 .btn.success {
   background-color: var(--green);
   border-color: var(--green);
-}
-
-.btn.success-outline {
-  color: var(--green);
-  border-color: var(--green);
-}
-
-.btn.success-outline:hover {
-  background-color: var(--green);
-  color: white;
+  color: #0b0b10;
 }
 
 .btn.danger {
   background-color: var(--red);
   border-color: var(--red);
-}
-
-.btn.danger-outline {
-  color: var(--red);
-  border-color: var(--red);
-}
-
-.btn.danger-outline:hover {
-  background-color: var(--red);
   color: white;
 }
 
@@ -116,19 +89,6 @@ body{
   font-weight: bold;
 }
 
-.muted {
-  color: var(--muted);
-}
-
-.logo-dot {
-  width: 15px;
-  height: 15px;
-  background-color: var(--brand1);
-  border-radius: 50%;
-  box-shadow: 0 0 10px var(--brand1);
-  margin-right: 10px;
-}
-
 /* ====== Layout ====== */
 .app-header {
   padding: 20px;
@@ -136,6 +96,8 @@ body{
   align-items: center;
   justify-content: space-between;
   background-color: var(--panel);
+  border-bottom: 1px solid var(--border);
+  height: 80px;
 }
 .brand {
   display: flex;
@@ -147,6 +109,14 @@ body{
   font-weight: 300;
   letter-spacing: 1px;
 }
+.logo-dot {
+  width: 15px;
+  height: 15px;
+  background-color: var(--brand1);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--brand1);
+  margin-right: 10px;
+}
 
 .layout {
   display: grid;
@@ -156,6 +126,7 @@ body{
   height: calc(100vh - 80px); /* Adjust based on header height */
   overflow: hidden;
 }
+
 
 .map-panel, .table-panel {
   background-color: var(--panel);
@@ -173,35 +144,6 @@ body{
   border-radius: 8px;
   margin-top: 10px;
   background-color: var(--bg);
-}
-
-.legend {
-  display: flex;
-  gap: 15px;
-  margin-top: 15px;
-  justify-content: center;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  font-size: 0.9em;
-}
-
-.legend .bullet {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  margin-right: 5px;
-}
-
-.legend .bullet.red { background-color: var(--red); }
-.legend .bullet.orange { background-color: var(--orange); }
-.legend .bullet.green { background-color: var(--green); }
-
-
-.table-panel {
-  overflow: hidden;
 }
 
 .panel-header {
@@ -259,26 +201,21 @@ body{
   font-size: 0.8em;
   padding: 6px 10px;
 }
-.grid .type {
-  max-width: 150px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 
 /* ====== Dialog ====== */
 dialog {
   padding: 0;
-  border: none;
+  border: 1px solid var(--border);
   background-color: transparent;
+  border-radius: 10px;
 }
 dialog::backdrop {
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
 }
 .dialog-card {
   background-color: var(--panel);
   padding: 20px;
-  border-radius: 10px;
   color: var(--text);
   display: flex;
   flex-direction: column;
@@ -308,4 +245,35 @@ dialog::backdrop {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+  margin-top: 10px;
+}
+
+/* ====== Estilos para Marcadores de Mapa Personalizados ====== */
+.marker-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.8); /* Borde blanco semi-transparente */
+    box-shadow: 0 0 8px rgba(0,0,0,0.7);
+}
+
+.marker-red {
+    background-color: var(--red);
+}
+
+.marker-orange {
+    background-color: var(--orange);
+}
+
+/* ====== Estilo para el Botón de Localización ====== */
+.btn.locate {
+  background-color: var(--brand4); /* Usamos el color morado del tema */
+  border-color: var(--brand4);
+  color: white;
+}
+
+.btn .icon {
+    width: 14px;
+    height: 14px;
+    margin-right: 6px;
 }

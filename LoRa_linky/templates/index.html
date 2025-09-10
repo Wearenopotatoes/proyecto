@@ -1,200 +1,77 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>lora - link</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <meta charset="UTF-8">
+    <title>Dashboard de Emergencias LoRaLink</title>
+    <!-- links de Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- NUEVO: Estilos para el plugin de Marker Cluster -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+
+    <!-- hoja de estilos personalizada -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 </head>
 <body>
-  <header class="app-header">
-    <div class="brand">
-      <span class="logo-dot"></span>
-      <h1>lora - link</h1>
-    </div>
-  </header>
+    <!-- Nueva cabecera de la aplicación -->
+    <header class="app-header">
+        <div class="brand">
+            <div class="logo-dot"></div>
+            <h1>LoRaLink Dashboard</h1>
+        </div>
+        <button id="clear-alerts-btn" class="btn danger">Limpiar Todo</button>
+    </header>
 
-  <main class="layout">
-    <section class="map-panel">
-      <div class="panel-header">
-        <h2>Señales lora- link</h2>
-      </div>
-      <div id="map"></div>
-      <div class="legend">
-        <span class="legend-item"><span class="bullet red"></span>Accidente</span>
-        <span class="legend-item"><span class="bullet orange"></span>En camino</span>
-        <span class="legend-item"><span class="bullet green"></span>Atendido</span>
-      </div>
-    </section>
+    <!-- Nueva maquetación con dos paneles -->
+    <main class="layout">
+        <div class="map-panel">
+            <div id="map"></div>
+        </div>
+        <div class="table-panel">
+            <div class="panel-header">
+                <h2>Reportes Activos</h2>
+            </div>
+            <div class="table-wrap">
+                <table class="grid">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Estado</th>
+                            <th>Unidad</th>
+                            <th>Hora</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <!-- El cuerpo de la tabla será llenado por JavaScript -->
+                    <tbody id="alerts-table-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
 
-    <section class="table-panel">
-      <div class="panel-header">
-        <h2>Mensajes</h2>
-        <button id="clearAllBtn" class="btn danger-outline">Vaciar todos los mensajes</button>
-      </div>
-      <div class="table-wrap">
-        <table class="grid">
-          <thead>
-            <tr>
-              <th># Señal</th>
-              <th>Percance</th>
-              <th>Fecha y hora</th>
-              <th>Estado</th>
-              <th>Unidad</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for a in alerts %}
-            <tr>
-              <td>{{ a.id }}</td>
-              <td class="type">{{ a.type }}</td>
-              <td>{{ a.timestamp }}</td>
-              <td>
-                {% if a.status == 'accidente' %}
-                  <span class="badge red">Accidente</span>
-                {% elif a.status == 'en_camino' %}
-                  <span class="badge orange">En camino</span>
-                {% elif a.status == 'atendido' %}
-                  <span class="badge green">Atendido</span>
-                {% else %}
-                  <span class="badge">-</span>
-                {% endif %}
-              </td>
-              <td>
-                {% if a.unit_assigned %}
-                  <span class="unit-tag">{{ a.unit_assigned }}</span>
-                {% else %}
-                  <span class="muted">—</span>
-                {% endif %}
-              </td>
-              <td class="actions">
-                <button class="btn primary-outline" onclick="openAssign('{{ a.id }}')">Asignar unidad</button>
-                <button class="btn success-outline" onclick="markAttended('{{ a.id }}')">Marcar atendido</button>
-                <button class="btn danger-outline" onclick="deleteAlert('{{ a.id }}')">Eliminar</button>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  </main>
+    <!-- Nuevo pop-up de asignación usando <dialog> -->
+    <dialog id="assign-unit-dialog">
+        <div class="dialog-card">
+            <h3>Asignar Unidad</h3>
+            <div class="field">
+                <label for="select-unit">Unidades disponibles</label>
+                <select id="select-unit"></select>
+            </div>
+            <div class="dialog-actions">
+                <button id="btn-cancel-assign" class="btn">Cancelar</button>
+                <button id="btn-confirm-assign" class="btn primary">Confirmar</button>
+            </div>
+        </div>
+    </dialog>
 
-  <dialog id="assignDialog">
-    <form method="dialog" class="dialog-card" onsubmit="return false;">
-      <h3>Asignar unidad</h3>
-      <div class="field">
-        <label for="unitSelect">Unidad disponible</label>
-        <select id="unitSelect"></select>
-      </div>
-      <div class="dialog-actions">
-        <button class="btn" onclick="closeAssign()">Cancelar</button>
-        <button class="btn primary" id="assignConfirm">Asignar</button>
-      </div>
-    </form>
-  </dialog>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 
-  <script>
-    const alerts = {{ alerts|tojson }};
-    const units = {{ units|tojson }};
+    <!-- NUEVO: Script para el plugin de Marker Cluster -->
 
-    const map = L.map('map').setView([13.6929, -89.2182], 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
-
-    function colorForStatus(status){
-      if(status === 'accidente') return 'red';
-      if(status === 'en_camino') return 'orange';
-      if(status === 'atendido') return 'green';
-      return 'blue';
-    }
-
-    alerts.forEach(a => {
-      if (a.lat != null && a.lon != null) {
-        const color = colorForStatus(a.status);
-        const marker = L.circleMarker([a.lat, a.lon], {
-          radius: 10,
-          weight: 2,
-          color: color,
-          fillColor: color,
-          fillOpacity: a.status === 'atendido' ? 0.2 : 0.6
-        });
-        if (a.status !== 'atendido') {
-          marker.addTo(map).bindPopup(`#${a.id} • ${a.type} • ${a.status}`);
-        }
-      }
-    });
-
-    async function deleteAlert(id){
-      if(!confirm("¿Eliminar esta señal?")) return;
-      await fetch(`/delete_alert/${id}`, { method: "DELETE" });
-      location.reload();
-    }
-
-    async function clearAll(){
-      if(!confirm("Esto eliminará todos los mensajes. ¿Continuar?")) return;
-      await fetch(`/clear_alerts`, { method: "DELETE" });
-      location.reload();
-    }
-    document.getElementById("clearAllBtn").addEventListener("click", clearAll);
-
-    async function markAttended(id){
-      const res = await fetch(`/mark_attended`, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ alert_id: id })
-      });
-      if(res.ok){ location.reload(); }
-    }
-
-    let currentAlertId = null;
-    const assignDialog = document.getElementById("assignDialog");
-    const unitSelect = document.getElementById("unitSelect");
-    const assignConfirm = document.getElementById("assignConfirm");
-
-    function openAssign(alertId){
-      currentAlertId = alertId;
-      unitSelect.innerHTML = "";
-      const availableUnits = units.filter(u => u.available !== false && typeof u === 'object');
-      if(availableUnits.length === 0){
-        const opt = document.createElement("option");
-        opt.value = "";
-        opt.textContent = "No hay unidades disponibles";
-        unitSelect.appendChild(opt);
-        unitSelect.disabled = true;
-        assignConfirm.disabled = true;
-      } else {
-        availableUnits.forEach(u => {
-          const opt = document.createElement("option");
-          opt.value = u.name;
-          opt.textContent = `${u.name} (Disponible)`;
-          unitSelect.appendChild(opt);
-        });
-        unitSelect.disabled = false;
-        assignConfirm.disabled = false;
-      }
-      assignDialog.showModal();
-    }
-
-    function closeAssign(){
-      assignDialog.close();
-    }
-
-    assignConfirm.addEventListener("click", async () => {
-      const selected = unitSelect.value;
-      if(!selected){ return; }
-      const res = await fetch(`/assign_unit`, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ alert_id: currentAlertId, unit_name: selected })
-      });
-      if(res.ok){
-        closeAssign();
-        location.reload();
-      }
-    });
-  </script>
+    <!-- Tu script personalizado (sin cambios) -->
+    
 </body>
 </html>
