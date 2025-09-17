@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Referencias a Elementos del DOM (sin cambios) ---
+    // --- Referencias a Elementos del DOM ---
     const tableBody = document.getElementById('alerts-table-body');
     const dialog = document.getElementById('assign-unit-dialog');
     const selectUnit = document.getElementById('select-unit');
@@ -7,40 +7,55 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCancelAssign = document.getElementById('btn-cancel-assign');
     const btnClearAlerts = document.getElementById('clear-alerts-btn');
 
-    // --- Definición de Capas de Mapa ---
-    const mapaCalles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    // --- Definición de TODAS las capas de mapa ---
+
+    // Capas Online (con zoom completo)
+    const mapaCallesOnline = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap', maxZoom: 19
+    });
+    const mapaSatelitalOnline = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: '&copy; Esri', maxZoom: 19
     });
 
-    const mapaSatelital = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles &copy; Esri'
+    // Capa Offline (SOLO el mapa de calles)
+    const mapaCallesOffline = L.tileLayer('/static/map_tiles/calles/{z}/{x}/{y}.png', {
+        attribution: 'Mapa Offline - Calles', minZoom: 8, maxZoom: 17 // maxZoom hasta 17 para el detalle urbano
     });
+
+    // --- Lógica para detectar conexión y elegir las capas correctas ---
+    let baseMaps;
+    let defaultLayer;
+
+    if (navigator.onLine) {
+        console.log("Modo Online: Usando mapas de Internet.");
+        baseMaps = {
+            "Calles": mapaCallesOnline,
+            "Satélite": mapaSatelitalOnline
+        };
+        defaultLayer = mapaCallesOnline;
+    } else {
+        console.log("Modo Offline: Usando mapa local de calles.");
+        baseMaps = {
+            "Calles (Offline)": mapaCallesOffline
+        };
+        defaultLayer = mapaCallesOffline;
+    }
 
     // --- Inicialización del Mapa ---
     const map = L.map('map', {
         center: [13.7942, -88.8965],
         zoom: 9,
-        layers: [mapaCalles]
+        layers: [defaultLayer]
     });
-    
-    // --- Control de Capas ---
-    const baseMaps = {
-        "Calles": mapaCalles,
-        "Satélite": mapaSatelital
-    };
+
     L.control.layers(baseMaps).addTo(map);
+    
+    // Solución para el mapa en negro
+    setTimeout(() => map.invalidateSize(), 100);
 
-    // --- CAMBIO CLAVE: Solución para el mapa en negro ---
-    // Forzamos al mapa a recalcular su tamaño después de que la página se haya renderizado.
-    setTimeout(function () {
-        map.invalidateSize();
-    }, 100); // 100 milisegundos de espera es suficiente.
-
-    // --- Grupo de Clústeres ---
+    // Usamos MarkerClusterGroup para agrupar marcadores
     const markersLayer = L.markerClusterGroup();
     map.addLayer(markersLayer);
-
-    // ... (El resto del archivo script.js no necesita ningún cambio) ...
 
     // --- Iconos de Mapa Personalizados ---
     const iconAccidente = L.divIcon({
@@ -51,8 +66,11 @@ document.addEventListener('DOMContentLoaded', () => {
         className: 'custom-div-icon', html: "<div class='marker-dot marker-orange'></div>",
         iconSize: [20, 20], iconAnchor: [10, 10]
     });
+
+    // --- Estado de la Aplicación ---
     let selectedAlertId = null;
 
+    // --- Lógica Principal ---
     async function fetchDashboardData() {
         try {
             const response = await fetch('/api/dashboard_data');
@@ -68,11 +86,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderDashboard(alerts, units) {
         markersLayer.clearLayers();
         tableBody.innerHTML = '';
+
         if (!alerts || alerts.length === 0) {
             tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No hay reportes de emergencia.</td></tr>`;
             return;
         }
+
         alerts.forEach(alert => {
+            // Renderizar Marcador
             if (alert.status !== 'atendido' && alert.lat && alert.lon) {
                 const icon = alert.status === 'en_camino' ? iconEnCamino : iconAccidente;
                 const tipoTraducido = traducirTipoAccidente(alert.type);
@@ -83,6 +104,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 marker.bindPopup(popupTexto);
                 markersLayer.addLayer(marker);
             }
+
+            // Renderizar Fila en la Tabla
             const row = document.createElement('tr');
             const statusClass = alert.status === 'atendido' ? 'green' : (alert.status === 'en_camino' ? 'orange' : 'red');
             const typeText = traducirTipoAccidente(alert.type);
@@ -101,8 +124,10 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             tableBody.appendChild(row);
         });
+
         assignButtonEvents(alerts, units);
     }
+
     function assignButtonEvents(alerts, units) {
         document.querySelectorAll('.btn-ver-mapa').forEach(btn => {
             btn.onclick = (e) => {
@@ -139,6 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         });
     }
+
     btnCancelAssign.onclick = () => dialog.close();
     btnConfirmAssign.onclick = () => {
         const unit_name = selectUnit.value;
@@ -161,10 +187,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(response => response.ok && fetchDashboardData());
         }
     };
+
     function traducirTipoAccidente(tipoId) {
-        const tipos = { '1': 'Colisión', '2': 'Incendio', '3': 'Derrumbe', '4': 'Inundación', "5":"Otro" };
+        // Lista actualizada de tipos de emergencia
+        const tipos = {
+            '1': 'Colisión',
+            '2': 'Incendio',
+            '3': 'Derrumbe',
+            '4': 'Inundación',
+            '5': 'Otro'
+        };
         return tipos[String(tipoId)] || tipoId;
     }
+
     fetchDashboardData();
     setInterval(fetchDashboardData, 5000);
 });

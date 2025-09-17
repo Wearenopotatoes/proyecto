@@ -179,7 +179,7 @@ def add_alert():
     new_id = str(int(datetime.now().timestamp()))
     alert = {
         "id": new_id,
-        "type": data.get("type", "Accidente"),
+        "type": data.get("type", "tipo_accidente"),
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "lat": float(data.get("lat")) if data.get("lat") is not None else None,
         "lon": float(data.get("lon")) if data.get("lon") is not None else None,
