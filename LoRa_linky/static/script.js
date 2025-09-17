@@ -1,5 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- CONFIGURACIÓN ---
+    // 
+    const API_BASE_URL = 'http://api.loralink.live';
+    const API_KEY = 'linkONxM0Jn';
+
     // --- Referencias a Elementos del DOM ---
+    const map = L.map('map').setView([13.7942, -88.8965], 9);
+    const markersLayer = L.layerGroup().addTo(map);
     const tableBody = document.getElementById('alerts-table-body');
     const dialog = document.getElementById('assign-unit-dialog');
     const selectUnit = document.getElementById('select-unit');
@@ -7,79 +14,44 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCancelAssign = document.getElementById('btn-cancel-assign');
     const btnClearAlerts = document.getElementById('clear-alerts-btn');
 
-    // --- Definición de TODAS las capas de mapa ---
-
-    // Capas Online (con zoom completo)
-    const mapaCallesOnline = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap', maxZoom: 19
-    });
-    const mapaSatelitalOnline = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: '&copy; Esri', maxZoom: 19
-    });
-
-    // Capa Offline (SOLO el mapa de calles)
-    const mapaCallesOffline = L.tileLayer('/static/map_tiles/calles/{z}/{x}/{y}.png', {
-        attribution: 'Mapa Offline - Calles', minZoom: 8, maxZoom: 17 // maxZoom hasta 17 para el detalle urbano
-    });
-
-    // --- Lógica para detectar conexión y elegir las capas correctas ---
-    let baseMaps;
-    let defaultLayer;
-
-    if (navigator.onLine) {
-        console.log("Modo Online: Usando mapas de Internet.");
-        baseMaps = {
-            "Calles": mapaCallesOnline,
-            "Satélite": mapaSatelitalOnline
-        };
-        defaultLayer = mapaCallesOnline;
-    } else {
-        console.log("Modo Offline: Usando mapa local de calles.");
-        baseMaps = {
-            "Calles (Offline)": mapaCallesOffline
-        };
-        defaultLayer = mapaCallesOffline;
-    }
-
-    // --- Inicialización del Mapa ---
-    const map = L.map('map', {
-        center: [13.7942, -88.8965],
-        zoom: 9,
-        layers: [defaultLayer]
-    });
-
-    L.control.layers(baseMaps).addTo(map);
+    // --- Iconos de Mapa ---
+    const iconAccidente = L.divIcon({ className: 'custom-div-icon', html: "<div class='marker-dot marker-red'></div>", iconSize: [20, 20], iconAnchor: [10, 10] });
+    const iconEnCamino = L.divIcon({ className: 'custom-div-icon', html: "<div class='marker-dot marker-orange'></div>", iconSize: [20, 20], iconAnchor: [10, 10] });
     
-    // Solución para el mapa en negro
-    setTimeout(() => map.invalidateSize(), 100);
-
-    // Usamos MarkerClusterGroup para agrupar marcadores
-    const markersLayer = L.markerClusterGroup();
-    map.addLayer(markersLayer);
-
-    // --- Iconos de Mapa Personalizados ---
-    const iconAccidente = L.divIcon({
-        className: 'custom-div-icon', html: "<div class='marker-dot marker-red'></div>",
-        iconSize: [20, 20], iconAnchor: [10, 10]
-    });
-    const iconEnCamino = L.divIcon({
-        className: 'custom-div-icon', html: "<div class='marker-dot marker-orange'></div>",
-        iconSize: [20, 20], iconAnchor: [10, 10]
-    });
-
-    // --- Estado de la Aplicación ---
     let selectedAlertId = null;
 
-    // --- Lógica Principal ---
+    // --- Inicialización del Mapa ---
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+    }).addTo(map);
+    setTimeout(() => map.invalidateSize(), 100);
+
+    // --- Lógica de la API ---
+    async function apiFetch(endpoint, options = {}) {
+        const headers = {
+            'Content-Type': 'application/json',
+            'X-API-Key': API_KEY,
+            ...options.headers,
+        };
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Error en la API:', errorData);
+            throw new Error(`Error en la API: ${response.statusText}`);
+        }
+        return response.json();
+    }
+
     async function fetchDashboardData() {
         try {
-            const response = await fetch('/api/dashboard_data');
-            if (!response.ok) throw new Error('Network response was not ok');
-            const data = await response.json();
-            renderDashboard(data.alerts, data.units);
+            const [alerts, units] = await Promise.all([
+                apiFetch('/emergencies/'),
+                apiFetch('/units/')
+            ]);
+            renderDashboard(alerts, units);
         } catch (error) {
             console.error("Error al cargar datos del dashboard:", error);
-            tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Error al cargar los datos.</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Error al cargar los datos de la API.</td></tr>`;
         }
     }
 
@@ -88,38 +60,36 @@ document.addEventListener('DOMContentLoaded', () => {
         tableBody.innerHTML = '';
 
         if (!alerts || alerts.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No hay reportes de emergencia.</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No hay reportes de emergencia.</td></tr>`;
             return;
         }
 
         alerts.forEach(alert => {
-            // Renderizar Marcador
-            if (alert.status !== 'atendido' && alert.lat && alert.lon) {
-                const icon = alert.status === 'en_camino' ? iconEnCamino : iconAccidente;
-                const tipoTraducido = traducirTipoAccidente(alert.type);
-                const unitsAssigned = alert.unit_assigned || [];
-                const unitsPopupText = unitsAssigned.length > 0 ? unitsAssigned.join(', ') : 'N/A';
-                const popupTexto = `<b>Tipo:</b> ${tipoTraducido}<br><b>Unidades:</b> ${unitsPopupText}`;
-                const marker = L.marker([alert.lat, alert.lon], { icon: icon });
-                marker.bindPopup(popupTexto);
-                markersLayer.addLayer(marker);
+            const statusText = (alert.status ? alert.status.description : 'desconocido').toLowerCase().replace(' ', '_');
+            
+            if (statusText !== 'atendido' && alert.latitud && alert.longitud) {
+                const icon = statusText === 'en_camino' ? iconEnCamino : iconAccidente;
+                const unitsText = alert.assigned_units.map(u => u.name).join(', ') || 'N/A';
+                const popupTexto = `<b>Tipo:</b> ${alert.accident_type.description}<br><b>Unidades:</b> ${unitsText}`;
+                
+                L.marker([alert.latitud, alert.longitud], { icon: icon })
+                    .addTo(markersLayer)
+                    .bindPopup(popupTexto);
             }
 
-            // Renderizar Fila en la Tabla
             const row = document.createElement('tr');
-            const statusClass = alert.status === 'atendido' ? 'green' : (alert.status === 'en_camino' ? 'orange' : 'red');
-            const typeText = traducirTipoAccidente(alert.type);
-            const unitsAssigned = alert.unit_assigned || [];
-            const unitsText = unitsAssigned.length > 0 ? unitsAssigned.map(u => `<span class="unit-tag">${u}</span>`).join(' ') : '<span class="muted">N/A</span>';
+            const statusClass = statusText === 'atendido' ? 'green' : (statusText === 'en_camino' ? 'orange' : 'red');
+            const unitsText = alert.assigned_units.length > 0 ? alert.assigned_units.map(u => `<span class="unit-tag">${u.name}</span>`).join(' ') : '<span class="muted">N/A</span>';
+
             row.innerHTML = `
-                <td class="type">${typeText}</td>
-                <td><span class="badge ${statusClass}">${alert.status.replace('_', ' ')}</span></td>
+                <td class="type">${alert.accident_type.description}</td>
+                <td><span class="badge ${statusClass}">${statusText.replace('_', ' ')}</span></td>
                 <td>${unitsText}</td>
-                <td class="muted">${alert.timestamp}</td>
+                <td class="muted">${alert.user ? alert.user.name : 'N/A'}</td>
+                <td class="muted">${new Date(alert.timestamp).toLocaleString('es-SV')}</td>
                 <td class="actions">
-                    <button class="btn locate btn-ver-mapa" data-lat="${alert.lat}" data-lon="${alert.lon}">Ver</button>
-                    <button class="btn btn-primary btn-asignar" data-id="${alert.id}">Asignar</button>
-                    <button class="btn btn-success btn-atendido" data-id="${alert.id}">Atendido</button>
+                    <button class="btn btn-primary btn-asignar" data-id="${alert.emergency_id}">Asignar</button>
+                    <button class="btn btn-success btn-atendido" data-id="${alert.emergency_id}">Atendido</button>
                 </td>
             `;
             tableBody.appendChild(row);
@@ -127,79 +97,66 @@ document.addEventListener('DOMContentLoaded', () => {
 
         assignButtonEvents(alerts, units);
     }
-
+    
     function assignButtonEvents(alerts, units) {
-        document.querySelectorAll('.btn-ver-mapa').forEach(btn => {
-            btn.onclick = (e) => {
-                const button = e.currentTarget;
-                const lat = parseFloat(button.dataset.lat);
-                const lon = parseFloat(button.dataset.lon);
-                if (!isNaN(lat) && !isNaN(lon)) {
-                    map.flyTo([lat, lon], 16);
-                }
-            };
-        });
         document.querySelectorAll('.btn-asignar').forEach(btn => {
             btn.onclick = (e) => {
-                selectedAlertId = e.currentTarget.dataset.id;
-                const currentAlert = alerts.find(a => a.id === selectedAlertId);
-                const assignedUnitsToThisAlert = currentAlert ? currentAlert.unit_assigned : [];
-                const availableUnits = units.filter(u => u.available && !assignedUnitsToThisAlert.includes(u.name));
+                selectedAlertId = e.target.dataset.id;
+                
+                const currentAlert = alerts.find(a => a.emergency_id == selectedAlertId);
+                const assignedUnitIds = currentAlert.assigned_units.map(u => u.unit_id);
+                
+                const availableUnits = units.filter(u => u.available && !assignedUnitIds.includes(u.unit_id));
+                
                 if (availableUnits.length > 0) {
-                    selectUnit.innerHTML = availableUnits.map(u => `<option value="${u.name}">${u.name}</option>`).join('');
+                    selectUnit.innerHTML = availableUnits.map(u => `<option value="${u.unit_id}">${u.name}</option>`).join('');
                     dialog.showModal();
                 } else {
                     alert('No hay más unidades disponibles para asignar a esta emergencia.');
                 }
             };
         });
+
         document.querySelectorAll('.btn-atendido').forEach(btn => {
-            btn.onclick = (e) => {
-                const alert_id = e.currentTarget.dataset.id;
-                fetch('/mark_attended', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ alert_id })
-                }).then(response => response.ok && fetchDashboardData());
+            btn.onclick = async (e) => {
+                const emergency_id = e.target.dataset.id;
+                await apiFetch(`/emergencies/${emergency_id}/attend`, { method: 'POST' });
+                fetchDashboardData();
             };
         });
     }
 
+    // --- Eventos del Dialog y Botones Principales ---
     btnCancelAssign.onclick = () => dialog.close();
-    btnConfirmAssign.onclick = () => {
-        const unit_name = selectUnit.value;
-        if (selectedAlertId && unit_name) {
-            fetch('/assign_unit', {
+    
+    btnConfirmAssign.onclick = async () => {
+        const unit_id = parseInt(selectUnit.value, 10);
+        if (selectedAlertId && unit_id) {
+            await apiFetch(`/emergencies/${selectedAlertId}/assign`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ alert_id: selectedAlertId, unit_name })
-            }).then(response => {
-                if (response.ok) {
-                    dialog.close();
-                    fetchDashboardData();
-                }
+                body: JSON.stringify({ unit_id: unit_id })
             });
+            dialog.close();
+            fetchDashboardData();
         }
     };
-    btnClearAlerts.onclick = () => {
-        if(confirm('¿Estás seguro de que quieres borrar todos los reportes? Esta acción no se puede deshacer.')) {
-            fetch('/clear_alerts', { method: 'DELETE' })
-                .then(response => response.ok && fetchDashboardData());
+    
+    btnClearAlerts.onclick = async () => {
+        if(confirm('¿Estás seguro de que quieres borrar todos los reportes?')) {
+            try {
+                await apiFetch('/emergencies/clear_all', { method: 'DELETE' }); 
+            } catch (e) {
+                console.error("La API no parece tener un endpoint para limpiar todo. Borrando uno por uno...");
+                const alertsResponse = await apiFetch('/emergencies/');
+                for(const alert of alertsResponse) {
+                    await apiFetch(`/emergencies/${alert.emergency_id}`, { method: 'DELETE'});
+                }
+            }
+            fetchDashboardData();
         }
     };
 
-    function traducirTipoAccidente(tipoId) {
-        // Lista actualizada de tipos de emergencia
-        const tipos = {
-            '1': 'Colisión',
-            '2': 'Incendio',
-            '3': 'Derrumbe',
-            '4': 'Inundación',
-            '5': 'Otro'
-        };
-        return tipos[String(tipoId)] || tipoId;
-    }
-
+    // --- Carga Inicial y Actualización Periódica ---
     fetchDashboardData();
     setInterval(fetchDashboardData, 5000);
 });

@@ -6,6 +6,8 @@ map_tiles/
 #    El repositorio debe tener el código, no los datos que genera.
 reportes.csv
 estados.json
+units.json
+lector_laptop.py
 
 # 3. Ignorar archivos de entorno y caché de Python (Buena práctica)
 __pycache__/
