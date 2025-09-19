@@ -1,0 +1,69 @@
+<!-- Archivo: templates/units.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Unidades - LoRaLink</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+    <header class="app-header">
+        <div class="brand">
+            <div class="logo-dot"></div>
+            <h1>Gestión de Unidades</h1>
+        </div>
+        <!-- Enlace para volver al dashboard principal -->
+        <a href="{{ url_for('dashboard') }}" class="btn primary">Volver al Dashboard</a>
+    </header>
+
+    <main class="layout">
+        <!-- Panel para agregar nuevas unidades -->
+        <div class="form-panel">
+            <h2>Agregar Nueva Unidad</h2>
+            <form id="add-unit-form">
+                <div class="field">
+                    <label for="unit-name">Nombre de la Unidad (ej. MOV-02)</label>
+                    <input type="text" id="unit-name" name="name" required>
+                </div>
+                <div class="field">
+                    <label for="unit-lat">Latitud</label>
+                    <input type="number" step="any" id="unit-lat" name="latitud" required>
+                </div>
+                <div class="field">
+                    <label for="unit-lon">Longitud</label>
+                    <input type="number" step="any" id="unit-lon" name="longitud" required>
+                </div>
+                <div class="dialog-actions">
+                    <button type="submit" class="btn success">Agregar Unidad</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Panel para listar las unidades existentes -->
+        <div class="table-panel">
+            <div class="panel-header">
+                <h2>Unidades Existentes</h2>
+            </div>
+            <div class="table-wrap">
+                <table class="grid">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Latitud</th>
+                            <th>Longitud</th>
+                            <th>Estado</th>
+                            <th></th> <!-- Columna para el ícono de expansión -->
+                        </tr>
+                    </thead>
+                    <tbody id="units-table-body">
+                        <!-- El contenido será generado por JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Enlazamos un nuevo script JS para esta página -->
+    <script src="{{ url_for('static', filename='units.js') }}"></script>
+</body>
+</html>

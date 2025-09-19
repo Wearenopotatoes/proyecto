@@ -6,7 +6,7 @@
   --text:#f4f6fb;
   --muted:#a9b0c0;
   --brand1:#00ff9d;
-  --brand2:#2d7dff;
+  --brand2:#2d7dff; /* Color azul para unidades */
   --brand3:#ff3366;
   --brand4:#9b5cff;
   --red:#ff3b30;
@@ -72,21 +72,25 @@ body{
   padding: 4px 8px;
   border-radius: 4px;
   color: white;
-  text-transform: uppercase;
+  text-transform: capitalize;
   font-weight: bold;
 }
 
-.badge.red { background-color: var(--red); }
-.badge.orange { background-color: var(--orange); }
-.badge.green { background-color: var(--green); }
+.badge.accidente { background-color: var(--red); }
+.badge.en-camino { background-color: var(--orange); color: #333; }
+.badge.atendido { background-color: var(--green); }
 
+
+/* CAMBIO: Etiqueta de unidad ahora usa el color azul (brand2) */
 .unit-tag {
-  background-color: var(--brand1);
-  color: var(--bg);
+  background-color: var(--brand2);
+  color: white;
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 0.8em;
   font-weight: bold;
+  display: inline-block;
+  margin: 2px;
 }
 
 /* ====== Layout ====== */
@@ -123,10 +127,9 @@ body{
   grid-template-columns: 1fr 1fr;
   gap: 20px;
   padding: 20px;
-  height: calc(100vh - 80px); /* Adjust based on header height */
+  height: calc(100vh - 80px);
   overflow: hidden;
 }
-
 
 .map-panel, .table-panel {
   background-color: var(--panel);
@@ -192,6 +195,11 @@ body{
   z-index: 10;
 }
 
+/* NUEVO: Estilo para la fila resaltada */
+.grid tr.highlighted {
+    background-color: var(--panel-2);
+}
+
 .grid .actions {
   display: flex;
   gap: 5px;
@@ -202,7 +210,17 @@ body{
   padding: 6px 10px;
 }
 
-/* ====== Dialog ====== */
+/* NUEVO: Hacer que el nombre de usuario sea clickeable */
+.user-link {
+    cursor: pointer;
+    text-decoration: underline;
+    color: var(--brand1);
+}
+.user-link:hover {
+    filter: brightness(1.2);
+}
+
+/* ====== Dialogs ====== */
 dialog {
   padding: 0;
   border: 1px solid var(--border);
@@ -220,10 +238,12 @@ dialog::backdrop {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  min-width: 300px;
+  min-width: 350px; /* Un poco más grande para los detalles */
 }
 .dialog-card h3 {
   margin: 0;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
 }
 .field {
   display: flex;
@@ -234,7 +254,7 @@ dialog::backdrop {
   font-size: 0.9em;
   color: var(--muted);
 }
-.field select {
+.field select, .field input {
   padding: 8px;
   border-radius: 5px;
   border: 1px solid var(--border);
@@ -248,32 +268,80 @@ dialog::backdrop {
   margin-top: 10px;
 }
 
-/* ====== Estilos para Marcadores de Mapa Personalizados ====== */
+/* NUEVO: Estilos para el pop-up de detalles de usuario */
+.user-details-section {
+    margin-top: 10px;
+}
+.user-details-section h4 {
+    margin: 0 0 8px 0;
+    color: var(--muted);
+    font-size: 0.9em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 5px;
+}
+.user-details-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.user-details-section li {
+    padding: 4px 0;
+}
+
+
+/* ====== Marcadores de Mapa ====== */
 .marker-dot {
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.8); /* Borde blanco semi-transparente */
+    border: 2px solid rgba(255, 255, 255, 0.8);
     box-shadow: 0 0 8px rgba(0,0,0,0.7);
+    transition: transform 0.2s ease-in-out;
 }
 
-.marker-red {
-    background-color: var(--red);
+/* NUEVO: Estilo para el marcador resaltado */
+.marker-dot.highlighted {
+    transform: scale(1.5);
+    border: 3px solid var(--brand1);
 }
 
-.marker-orange {
-    background-color: var(--orange);
+.marker-red { background-color: var(--red); }
+.marker-orange { background-color: var(--orange); }
+
+/* ====== Estilos para la Tabla Expandible ====== */
+.unit-row.occupied {
+    cursor: pointer;
+}
+.unit-row.occupied:hover {
+    background-color: var(--panel-2);
 }
 
-/* ====== Estilo para el Botón de Localización ====== */
-.btn.locate {
-  background-color: var(--brand4); /* Usamos el color morado del tema */
-  border-color: var(--brand4);
-  color: white;
+.expand-icon {
+    transition: transform 0.3s ease;
+    display: inline-block;
 }
 
-.btn .icon {
-    width: 14px;
-    height: 14px;
-    margin-right: 6px;
+.unit-row.expanded .expand-icon {
+    transform: rotate(90deg);
+}
+
+.details-row {
+    display: none;
+}
+
+.details-cell {
+    padding: 15px 20px 15px 40px !important;
+    background-color: var(--panel-2);
+}
+
+.details-cell ul {
+    margin: 5px 0 0 0;
+    padding-left: 20px;
+    list-style-type: square;
+}
+
+.details-cell li {
+    padding: 5px 0;
+    color: var(--muted);
 }
