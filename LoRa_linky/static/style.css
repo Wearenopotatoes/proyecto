@@ -76,12 +76,11 @@ body{
   font-weight: bold;
 }
 
-.badge.accidente { background-color: var(--red); }
-.badge.en-camino { background-color: var(--orange); color: #333; }
-.badge.atendido { background-color: var(--green); }
+.badge.accidente, .badge.red { background-color: var(--red); }
+.badge.en-camino, .badge.orange { background-color: var(--orange); color: #333; }
+.badge.atendido, .badge.green { background-color: var(--green); }
 
 
-/* CAMBIO: Etiqueta de unidad ahora usa el color azul (brand2) */
 .unit-tag {
   background-color: var(--brand2);
   color: white;
@@ -131,7 +130,7 @@ body{
   overflow: hidden;
 }
 
-.map-panel, .table-panel {
+.map-panel, .table-panel, .form-panel {
   background-color: var(--panel);
   border-radius: 10px;
   padding: 20px;
@@ -195,7 +194,6 @@ body{
   z-index: 10;
 }
 
-/* NUEVO: Estilo para la fila resaltada */
 .grid tr.highlighted {
     background-color: var(--panel-2);
 }
@@ -210,7 +208,6 @@ body{
   padding: 6px 10px;
 }
 
-/* NUEVO: Hacer que el nombre de usuario sea clickeable */
 .user-link {
     cursor: pointer;
     text-decoration: underline;
@@ -238,29 +235,14 @@ dialog::backdrop {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  min-width: 350px; /* Un poco más grande para los detalles */
+  min-width: 350px;
 }
 .dialog-card h3 {
   margin: 0;
   border-bottom: 1px solid var(--border);
   padding-bottom: 10px;
 }
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.field label {
-  font-size: 0.9em;
-  color: var(--muted);
-}
-.field select, .field input {
-  padding: 8px;
-  border-radius: 5px;
-  border: 1px solid var(--border);
-  background-color: var(--bg);
-  color: var(--text);
-}
+
 .dialog-actions {
   display: flex;
   justify-content: flex-end;
@@ -268,7 +250,7 @@ dialog::backdrop {
   margin-top: 10px;
 }
 
-/* NUEVO: Estilos para el pop-up de detalles de usuario */
+/* ====== Paneles de Usuario y Unidades ====== */
 .user-details-section {
     margin-top: 10px;
 }
@@ -289,6 +271,30 @@ dialog::backdrop {
     padding: 4px 0;
 }
 
+.form-panel h2 {
+    margin-top: 0;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.field label {
+  font-size: 0.9em;
+  color: var(--muted);
+}
+
+.field input, .field select {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background-color: var(--bg);
+  color: var(--text);
+  font-size: 1em;
+}
 
 /* ====== Marcadores de Mapa ====== */
 .marker-dot {
@@ -300,7 +306,6 @@ dialog::backdrop {
     transition: transform 0.2s ease-in-out;
 }
 
-/* NUEVO: Estilo para el marcador resaltado */
 .marker-dot.highlighted {
     transform: scale(1.5);
     border: 3px solid var(--brand1);
@@ -309,7 +314,7 @@ dialog::backdrop {
 .marker-red { background-color: var(--red); }
 .marker-orange { background-color: var(--orange); }
 
-/* ====== Estilos para la Tabla Expandible ====== */
+/* ====== Tabla de Unidades Expandible ====== */
 .unit-row.occupied {
     cursor: pointer;
 }
@@ -345,3 +350,11 @@ dialog::backdrop {
     padding: 5px 0;
     color: var(--muted);
 }
+
+.stats-column {
+    font-size: 0.9em;
+    color: var(--muted);
+    text-align: center;
+    font-family: monospace;
+}
+

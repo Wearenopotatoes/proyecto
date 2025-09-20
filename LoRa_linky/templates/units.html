@@ -1,4 +1,3 @@
-<!-- Archivo: templates/units.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -12,7 +11,6 @@
             <div class="logo-dot"></div>
             <h1>Gestión de Unidades</h1>
         </div>
-        <!-- Enlace para volver al dashboard principal -->
         <a href="{{ url_for('dashboard') }}" class="btn primary">Volver al Dashboard</a>
     </header>
 
@@ -52,7 +50,7 @@
                             <th>Latitud</th>
                             <th>Longitud</th>
                             <th>Estado</th>
-                            <th></th> <!-- Columna para el ícono de expansión -->
+                            <th>Emergencias Activas</th>
                         </tr>
                     </thead>
                     <tbody id="units-table-body">
