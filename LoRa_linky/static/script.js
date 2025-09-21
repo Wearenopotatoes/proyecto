@@ -69,20 +69,47 @@ document.addEventListener('DOMContentLoaded', () => {
         return response.json();
     }
 
-    async function fetchDashboardData() {
-        try {
-            const [alerts, units, kins] = await Promise.all([
-                apiFetch('/emergencies'),
-                apiFetch('/emergency-units'),
-                apiFetch('/catalogs/kin-catalog')
-            ]);
-            kinCatalog = kins;
-            renderDashboard(alerts, units);
-        } catch (error) {
-            console.error("Error al cargar datos del dashboard:", error);
-            tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Error al cargar los datos de la API.</td></tr>`;
+async function fetchDashboardData() {
+    try {
+        // 1. Obtenemos los datos primarios como antes
+        const [alerts, baseUnits, kins] = await Promise.all([
+            apiFetch('/emergencies'),
+            apiFetch('/emergency-units'),
+            apiFetch('/catalogs/kin-catalog')
+        ]);
+        kinCatalog = kins;
+
+        // Si no hay unidades, no hay nada más que hacer
+        if (!baseUnits || baseUnits.length === 0) {
+            renderDashboard(alerts, []); // Renderiza con un array de unidades vacío
+            return;
         }
+
+        // 2. ENRIQUECEMOS los datos de las unidades con sus estadísticas
+        // Creamos una promesa para cada llamada a las estadísticas de cada unidad
+        const statsPromises = baseUnits.map(unit =>
+            apiFetch(`/emergency-units/${unit.emergency_unit_id}/stats`)
+                .catch(e => ({ active_emergencies: 0 })) // Si una falla, asumimos 0 para no romper todo
+        );
+        // Esperamos a que todas las llamadas de estadísticas terminen
+        const allStats = await Promise.all(statsPromises);
+
+        // Combinamos la información base con las estadísticas obtenidas
+        const unitsWithStats = baseUnits.map((unit, index) => {
+            return {
+                ...unit, // Copia las propiedades originales (id, name, lat, lon)
+                active_emergencies: allStats[index].active_emergencies // Añade la propiedad que faltaba
+            };
+        });
+
+        // 3. Renderizamos el dashboard con los datos COMPLETOS
+        renderDashboard(alerts, unitsWithStats);
+
+    } catch (error) {
+        console.error("Error al cargar datos del dashboard:", error);
+        tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Error al cargar los datos de la API.</td></tr>`;
     }
+}
 
     function traducirStatus(status) {
         const statuses = { 1: 'accidente', 2: 'en_camino', 3: 'atendido' };
@@ -172,32 +199,46 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // --- Botones de Acción ---
-        document.querySelectorAll('.btn-asignar').forEach(btn => {
-            btn.onclick = (e) => {
-                selectedAlertId = e.target.dataset.id;
-                const currentAlert = alerts.find(a => a.emergency_id == selectedAlertId);
-                const assignedUnitIds = (currentAlert.assigned_unit_rel ? [currentAlert.assigned_unit_rel.emergency_unit_id] : []);
-                const availableUnits = units.filter(u => u.available && !assignedUnitIds.includes(u.emergency_unit_id));
-                
-                if (availableUnits.length > 0) {
-                    selectUnit.innerHTML = availableUnits.map(u => `<option value="${u.emergency_unit_id}">${u.name}</option>`).join('');
-                    assignDialog.showModal();
-                } else {
-                    alert('No hay más unidades disponibles para asignar a esta emergencia.');
-                }
-            };
-        });
+    document.querySelectorAll('.btn-asignar').forEach(btn => {
+    btn.onclick = (e) => {
+        selectedAlertId = e.target.dataset.id;
+        const currentAlert = alerts.find(a => a.emergency_id == selectedAlertId);
+        const assignedUnitIds = (currentAlert.assigned_unit_rel ? [currentAlert.assigned_unit_rel.emergency_unit_id] : []);
+        // Se reemplaza u.available por la condición correcta.
+        const availableUnits = units.filter(u => u.active_emergencies === 0 && !assignedUnitIds.includes(u.emergency_unit_id));
+        
+        if (availableUnits.length > 0) {
+            selectUnit.innerHTML = availableUnits.map(u => `<option value="${u.emergency_unit_id}">${u.name}</option>`).join('');
+            assignDialog.showModal();
+        } else {
+            alert('No hay más unidades disponibles para asignar a esta emergencia.');
+        }
+    };
+});
 
         document.querySelectorAll('.btn-atendido').forEach(btn => {
-            btn.onclick = async (e) => {
-                const emergency_id = e.target.dataset.id;
-                await apiFetch(`/emergencies/${emergency_id}`, { 
-                    method: 'PUT',
-                    body: JSON.stringify({ status: 3 })
-                });
-                fetchDashboardData();
-            };
-        });
+             btn.onclick = async (e) => {
+             const emergencyId = e.target.dataset.id;
+
+             try {
+             // La ÚNICA petición que necesitas hacer:
+             await apiFetch(`/emergencies/${emergencyId}`, {
+                method: 'PUT',
+                body: JSON.stringify({
+                    status: 3,           // 1. Marca la emergencia como "atendida".
+                    assigned_unit: null  // 2. Rompe explícitamente la asignación.
+                })
+            });
+
+        } catch (error) {
+            console.error("Error al actualizar la emergencia:", error);
+            alert("Hubo un error al procesar la solicitud.");
+        } finally {
+            // Siempre refrescamos el dashboard para ver los cambios.
+            fetchDashboardData();
+        }
+    };
+});
     }
 
     function renderUserDetails(user) {
@@ -252,8 +293,8 @@ document.addEventListener('DOMContentLoaded', () => {
             await apiFetch(`/emergencies/${selectedAlertId}`, {
                 method: 'PUT',
                 body: JSON.stringify({ 
-                    status_id: 2,
-                    assigned_unit_id: unit_id 
+                    status: 2,
+                    assigned_unit: unit_id 
                 })
             });
             assignDialog.close();
