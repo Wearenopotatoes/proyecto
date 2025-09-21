@@ -1,4 +1,4 @@
-+document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     // --- CONFIGURACIÓN ---
     const API_BASE_URL = 'https://loralink.live';
     const API_KEY = 'linkONxM0Jn';
@@ -84,9 +84,9 @@
         }
     }
 
-    function traducirStatus(statusId) {
+    function traducirStatus(status) {
         const statuses = { 1: 'accidente', 2: 'en_camino', 3: 'atendido' };
-        return statuses[statusId] || 'desconocido';
+        return statuses[status] || 'desconocido';
     }
 
     function renderDashboard(alerts, units) {
@@ -193,7 +193,7 @@
                 const emergency_id = e.target.dataset.id;
                 await apiFetch(`/emergencies/${emergency_id}`, { 
                     method: 'PUT',
-                    body: JSON.stringify({ status_id: 3 })
+                    body: JSON.stringify({ status: 3 })
                 });
                 fetchDashboardData();
             };

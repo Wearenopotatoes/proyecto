@@ -12,12 +12,8 @@
             <div class="logo-dot"></div>
             <h1>LoRaLink Dashboard</h1>
         </div>
-        <!-- CONTENEDOR PARA LOS BOTONES DE LA CABECERA -->
-        <div>
-            <!-- NUEVO: Enlace a la página de gestión de unidades -->
-            <a href="{{ url_for('units_management') }}" class="btn primary">Gestionar Unidades</a>
-            <button id="clear-alerts-btn" class="btn danger">Limpiar Todo</button>
-        </div>
+        <a href="{{ url_for('units_management') }}" class="btn primary">Gestionar Unidades</a>
+        <button id="clear-alerts-btn" class="btn danger">Limpiar Todo</button>
     </header>
 
     <main class="layout">
@@ -34,14 +30,13 @@
                         <tr>
                             <th>Tipo</th>
                             <th>Estado</th>
-                            <th>Unidad</th>
+                            <th>Unidades</th>
                             <th>Usuario</th>
                             <th>Hora</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="alerts-table-body">
-                        <!-- El contenido será generado por JavaScript -->
                     </tbody>
                 </table>
             </div>
@@ -63,9 +58,10 @@
         </div>
     </dialog>
 
-    <!-- Pop-up para detalles del usuario (sin cambios) -->
+    <!-- NUEVO: Pop-up para detalles del usuario -->
     <dialog id="user-details-dialog">
         <div class="dialog-card" id="user-details-content">
+            <!-- El contenido será generado por JavaScript -->
             Cargando información del usuario...
         </div>
     </dialog>
@@ -74,4 +70,3 @@
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
-
