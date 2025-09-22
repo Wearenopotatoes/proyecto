@@ -17,8 +17,22 @@
             <div class="logo-dot"></div>
             <h1>LoRaLink Dashboard</h1>
         </div>
+
+        <div class="dashboard-stats">
+        <div class="stat-item">
+            <span id="active-alerts-count" class="stat-number">0</span>
+            <span class="stat-label">Reportes Activos</span>
+        </div>
+        <div class="stat-item">
+            <span id="available-units-count" class="stat-number">0</span>
+            <span class="stat-label">Unidades Disponibles</span>
+        </div>
+        </div>
+        
+        <div>
         <a href="{{ url_for('units_management') }}" class="btn primary">Gestionar Unidades</a>
         <button id="clear-alerts-btn" class="btn danger">Limpiar Todo</button>
+        </div>
     </header>
 
     <main class="layout">
@@ -70,8 +84,15 @@
             Cargando información del usuario...
         </div>
     </dialog>
+    <!-- NUEVO: Pop-up para detalles de la emergencia -->
+    <dialog id="emergency-details-dialog">
+         <div class="dialog-card" id="emergency-details-content">
+             <h3>Cargando detalles de la emergencia...</h3>
+         </div>
+    </dialog>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
+
 </body>
 </html>

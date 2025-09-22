@@ -331,18 +331,72 @@ dialog::backdrop {
 /* --- Corrección de Contraste para Pop-up de Detalles de Usuario --- */
 
 /* Establece un color de texto base casi blanco para todo el contenido del pop-up */
-#user-details-content {
-    color: var(--text); /* var(--text) es #f4f6fb */
+#/* --- Estilo de Texto General para Todos los Pop-ups --- */
+
+/*
+  Asegura que todo el texto dentro de cualquier .dialog-card
+  tenga el color correcto para un buen contraste.
+*/
+.dialog-card {
+    color: var(--text); /* Establece el color base casi blanco */
 }
 
-/* Asegura que los encabezados y elementos de lista hereden el color correcto */
-#user-details-content h3,
-#user-details-content h4,
-#user-details-content li {
-    color: inherit;
+.dialog-card h3,
+.dialog-card h4,
+.dialog-card li {
+    color: inherit; /* Heredan el color del padre */
 }
 
-/* Aumenta el contraste de los textos en negrita (como los nombres de contacto) */
-#user-details-content li b {
-    color: #ffffff; /* Blanco puro para máxima legibilidad */
+.dialog-card li b {
+    color: #ffffff; /* Blanco puro para textos en negrita */
+}
+
+/* Estilos para los contadores en la cabecera */
+.dashboard-stats {
+    display: flex;
+    gap: 30px;
+    position: absolute; /* Lo posicionamos en el centro */
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.stat-number {
+    font-size: 2em; /* Número grande y visible */
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.9em;
+    color: var(--muted);
+    line-height: 1.2;
+}
+
+/* --- Anulación de Fondo para el Pop-up de Detalles de Emergencia --- */
+
+/*
+  Hacemos que el fondo (backdrop) del pop-up de detalles sea completamente
+  transparente y sin filtro de desenfoque, para poder ver el mapa.
+*/
+#emergency-details-dialog::backdrop {
+    background-color: transparent;
+    backdrop-filter: none;
+}
+
+
+
+/* --- Corrección de Contraste para los Valores de la Lista de Detalles de Emergencia --- */
+.details-list li {
+    color: var(--text); /* Asegura que el texto general del li sea claro */
+}
+
+.details-list li b {
+    color: var(--muted); /* Mantiene la etiqueta en un tono ligeramente más tenue para distinguirla */
 }

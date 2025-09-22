@@ -25,6 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCancelAssign = document.getElementById('btn-cancel-assign');
     const btnClearAlerts = document.getElementById('clear-alerts-btn');
 
+    const emergencyDialog = document.getElementById('emergency-details-dialog');
+    const emergencyDialogContent = document.getElementById('emergency-details-content');
+
     // --- Iconos Personalizados para el Mapa ---
     const iconAccidente = L.divIcon({ className: 'custom-div-icon', html: "<div class='marker-dot marker-red'></div>", iconSize: [20, 20], iconAnchor: [10, 10] });
     const iconEnCamino = L.divIcon({ className: 'custom-div-icon', html: "<div class='marker-dot marker-orange'></div>", iconSize: [20, 20], iconAnchor: [10, 10] });
@@ -201,6 +204,7 @@ function renderDashboard(alerts, units) {
                 <td class="muted">${userHtml}</td>
                 <td class="muted">${new Date(alert.timestamp).toLocaleString('es-SV')}</td>
                 <td class="actions">
+                    <button class="btn btn-details" data-id="${alert.emergency_id}">Ver</button>
                     <button class="btn btn-primary btn-asignar" data-id="${alert.emergency_id}">Asignar</button>
                     <button class="btn btn-success btn-atendido" data-id="${alert.emergency_id}">Atendido</button>
                 </td>

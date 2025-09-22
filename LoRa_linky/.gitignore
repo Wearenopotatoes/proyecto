@@ -8,6 +8,7 @@ reportes.csv
 estados.json
 units.json
 lector_laptop.py
+script.js
 
 # 3. Ignorar archivos de entorno y caché de Python (Buena práctica)
 __pycache__/
