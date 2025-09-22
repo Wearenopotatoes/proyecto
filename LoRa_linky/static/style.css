@@ -1,360 +1,348 @@
-/* ====== Base ====== */
-:root{
-  --bg:#0b0b10;
-  --panel:#12121a;
-  --panel-2:#151526;
-  --text:#f4f6fb;
-  --muted:#a9b0c0;
-  --brand1:#00ff9d;
-  --brand2:#2d7dff; /* Color azul para unidades */
-  --brand3:#ff3366;
-  --brand4:#9b5cff;
-  --red:#ff3b30;
-  --orange:#ff9500;
-  --green:#30d158;
-  --border: #21223a;
-  --shadow: 0 0 0 1px rgba(41,48,86,.35);
-}
-*{ box-sizing: border-box; }
-html,body{ height:100%; }
-body{
-  margin:0;
-  background: radial-gradient(1200px 600px at 10% -10%, rgba(45,125,255,.15), transparent 60%),
-            radial-gradient(1200px 600px at 110% 0%, rgba(155,92,255,.15), transparent 60%),
-            var(--bg);
-  color: var(--text);
-  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
-  font-size:16px;
-  line-height:1.4;
-  overflow: hidden;
+/* ==========================================================================
+   1. CONFIGURACIÓN GLOBAL Y VARIABLES (THEME)
+   ========================================================================== */
+:root {
+    /* Paleta de Colores */
+    --bg: #0b0b10;
+    --panel: #12121a;
+    --panel-2: #1a1b2d; /* Ligeramente más claro para contraste */
+    --text: #f4f6fb;
+    --muted: #a9b0c0;
+    --brand1: #00ff9d; /* Verde menta */
+    --brand2: #2d7dff; /* Azul primario */
+    --red: #ff3b30;
+    --orange: #ff9500;
+    --green: #30d158;
+
+    /* Estilos Reutilizables */
+    --border-color: #2a2b4a;
+    --border-radius: 10px;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --transition-speed: 0.2s;
 }
 
-/* ====== Utilities ====== */
+/* ==========================================================================
+   2. ESTILOS BASE Y TIPOGRAFÍA
+   ========================================================================== */
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    background: radial-gradient(1200px 600px at 10% -10%, rgba(45, 125, 255, .1), transparent 70%),
+                radial-gradient(1200px 600px at 110% 0%, rgba(155, 92, 255, .1), transparent 70%),
+                var(--bg);
+    color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    overflow: hidden;
+    /* Mejoras de renderizado de fuentes */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==========================================================================
+   3. COMPONENTES REUTILIZABLES (BOTONES, BADGES)
+   ========================================================================== */
 .btn {
-  font-size: 14px;
-  padding: 8px 16px;
-  border-radius: 5px;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  border: 1px solid transparent;
-  background-color: transparent;
-  color: var(--text);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all var(--transition-speed) ease-in-out;
+    border: 1px solid var(--border-color);
+    background-color: var(--panel-2);
+    color: var(--text);
 }
 
 .btn:hover {
-  filter: brightness(1.2);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    filter: brightness(1.1);
 }
 
-.btn.primary {
-  background-color: var(--brand2);
-  border-color: var(--brand2);
-  color: white;
+/* Mejora de accesibilidad para navegación con teclado */
+.btn:focus-visible {
+    outline: 2px solid var(--brand2);
+    outline-offset: 2px;
 }
 
-.btn.success {
-  background-color: var(--green);
-  border-color: var(--green);
-  color: #0b0b10;
-}
-
-.btn.danger {
-  background-color: var(--red);
-  border-color: var(--red);
-  color: white;
-}
+.btn.primary { background-color: var(--brand2); border-color: var(--brand2); color: white; }
+.btn.success { background-color: var(--green); border-color: var(--green); color: #0b0b10; }
+.btn.danger { background-color: var(--red); border-color: var(--red); color: white; }
 
 .badge {
-  font-size: 0.8em;
-  padding: 4px 8px;
-  border-radius: 4px;
-  color: white;
-  text-transform: capitalize;
-  font-weight: bold;
+    font-size: 0.8em;
+    padding: 4px 10px;
+    border-radius: 12px; /* Más redondeado */
+    color: white;
+    text-transform: capitalize;
+    font-weight: 700;
 }
 
-.badge.accidente, .badge.red { background-color: var(--red); }
-.badge.en-camino, .badge.orange { background-color: var(--orange); color: #333; }
-.badge.atendido, .badge.green { background-color: var(--green); }
-
+.badge.accidente { background-color: var(--red); }
+.badge.en-camino { background-color: var(--orange); color: #111; }
+.badge.atendido { background-color: var(--green); color: #111;}
+.badge.green { background-color: var(--green); }
+.badge.red { background-color: var(--red); }
 
 .unit-tag {
-  background-color: var(--brand2);
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.8em;
-  font-weight: bold;
-  display: inline-block;
-  margin: 2px;
+    background-color: var(--brand2);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: 500;
+    display: inline-block;
+    margin: 2px;
 }
 
-/* ====== Layout ====== */
+/* ==========================================================================
+   4. LAYOUT Y PANELES PRINCIPALES
+   ========================================================================== */
 .app-header {
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: var(--panel);
-  border-bottom: 1px solid var(--border);
-  height: 80px;
+    height: 80px;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--panel);
+    border-bottom: 1px solid var(--border-color);
 }
-.brand {
-  display: flex;
-  align-items: center;
-}
+
 .brand h1 {
-  margin: 0;
-  font-size: 1.5em;
-  font-weight: 300;
-  letter-spacing: 1px;
+    margin: 0;
+    font-size: 1.4em;
+    font-weight: 500;
 }
+
 .logo-dot {
-  width: 15px;
-  height: 15px;
-  background-color: var(--brand1);
-  border-radius: 50%;
-  box-shadow: 0 0 10px var(--brand1);
-  margin-right: 10px;
+    width: 12px;
+    height: 12px;
+    background-color: var(--brand1);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--brand1);
+    margin-right: 12px;
 }
 
 .layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  padding: 20px;
-  height: calc(100vh - 80px);
-  overflow: hidden;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    padding: 24px;
+    height: calc(100vh - 80px);
 }
 
-.map-panel, .table-panel, .form-panel {
-  background-color: var(--panel);
-  border-radius: 10px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
+.map-panel, .table-panel {
+    background-color: var(--panel);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
 }
 
-.map-panel {
-  height: 100%;
-}
 #map {
-  flex-grow: 1;
-  border-radius: 8px;
-  margin-top: 10px;
-  background-color: var(--bg);
+    flex-grow: 1;
+    border-radius: 8px;
+    background-color: var(--bg);
 }
 
+/* ==========================================================================
+   5. TABLA DE DATOS
+   ========================================================================== */
 .panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+    margin-bottom: 20px;
 }
+
 .panel-header h2 {
-  margin: 0;
+    margin: 0;
+    font-weight: 500;
 }
 
 .table-wrap {
-  flex-grow: 1;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--muted) transparent;
-}
-.table-wrap::-webkit-scrollbar {
-  width: 8px;
-}
-.table-wrap::-webkit-scrollbar-thumb {
-  background-color: var(--muted);
-  border-radius: 4px;
+    flex-grow: 1;
+    overflow-y: auto;
 }
 
+/* Scrollbar moderno */
+.table-wrap::-webkit-scrollbar { width: 8px; }
+.table-wrap::-webkit-scrollbar-track { background: transparent; }
+.table-wrap::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 4px; }
+.table-wrap::-webkit-scrollbar-thumb:hover { background-color: var(--muted); }
+
 .grid {
-  width: 100%;
-  border-collapse: collapse;
+    width: 100%;
+    border-collapse: collapse;
 }
 
 .grid th, .grid td {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
+    padding: 16px 15px; /* Más espacio vertical */
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .grid th {
-  background-color: var(--panel-2);
-  font-weight: normal;
-  text-transform: uppercase;
-  font-size: 0.9em;
-  color: var(--muted);
-  position: sticky;
-  top: 0;
-  z-index: 10;
+    background-color: var(--bg); /* Fondo más oscuro para el encabezado */
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.8em;
+    color: var(--muted);
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
-.grid tr.highlighted {
-    background-color: var(--panel-2);
+/* Efecto "cebra" para mejorar legibilidad */
+.grid tbody tr:nth-child(even) {
+    background-color: rgba(42, 43, 74, 0.2);
 }
 
-.grid .actions {
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
-}
 .grid .actions .btn {
-  font-size: 0.8em;
-  padding: 6px 10px;
+    font-size: 0.8em;
+    padding: 6px 10px;
 }
 
 .user-link {
     cursor: pointer;
-    text-decoration: underline;
+    text-decoration: none;
     color: var(--brand1);
-}
-.user-link:hover {
-    filter: brightness(1.2);
+    font-weight: 500;
+    transition: color var(--transition-speed);
 }
 
-/* ====== Dialogs ====== */
+.user-link:hover {
+    color: white;
+    text-decoration: underline;
+}
+
+/* --- RESALTADO DE ALTO IMPACTO (TABLA Y MAPA) --- */
+
+/* 1. Estilo para la fila de la tabla */
+tr.highlighted {
+    background-color: #fff3cd;
+    color: #333;
+    transform: scale(1.02);
+    transition: transform 0.2s ease-out, background-color 0.2s ease-out;
+    box-shadow: var(--shadow-md);
+    cursor: pointer;
+    /* Se necesita para que el color de texto se aplique a las celdas */
+    & > td { color: inherit; } 
+}
+
+/* 2. Animación de pulso para el marcador */
+@keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(45, 125, 255, 0.7); }
+    70% { transform: scale(1.5); box-shadow: 0 0 0 10px rgba(45, 125, 255, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(45, 125, 255, 0); }
+}
+
+/* 3. Aplicación de la animación al marcador resaltado */
+.highlighted-marker .marker-dot {
+    animation: pulse 1.5s infinite;
+    border-color: var(--brand2);
+}
+
+
+/* ==========================================================================
+   6. DIÁLOGOS (MODALES)
+   ========================================================================== */
 dialog {
-  padding: 0;
-  border: 1px solid var(--border);
-  background-color: transparent;
-  border-radius: 10px;
+    padding: 0;
+    border: 1px solid var(--border-color);
+    background-color: var(--panel);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
 }
+
 dialog::backdrop {
-  background-color: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(3px);
+    background-color: rgba(124, 100, 100, 0.6);
+    backdrop-filter: blur(5px);
 }
+
 .dialog-card {
-  background-color: var(--panel);
-  padding: 20px;
-  color: var(--text);
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  min-width: 350px;
+    padding: 24px;
+    min-width: 400px;
 }
 .dialog-card h3 {
-  margin: 0;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 10px;
+    margin: 0 0 20px 0;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 15px;
+    font-weight: 500;
 }
 
 .dialog-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-/* ====== Paneles de Usuario y Unidades ====== */
-.user-details-section {
-    margin-top: 10px;
-}
-.user-details-section h4 {
-    margin: 0 0 8px 0;
-    color: var(--muted);
-    font-size: 0.9em;
-    text-transform: uppercase;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 5px;
-}
-.user-details-section ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-.user-details-section li {
-    padding: 4px 0;
-}
-
-.form-panel h2 {
-    margin-top: 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 24px;
 }
 
 .field {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
 }
-
-.field label {
-  font-size: 0.9em;
-  color: var(--muted);
-}
-
+.field label { font-size: 0.9em; color: var(--muted); }
 .field input, .field select {
-  padding: 10px;
-  border-radius: 5px;
-  border: 1px solid var(--border);
-  background-color: var(--bg);
-  color: var(--text);
-  font-size: 1em;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg);
+    color: var(--text);
+    font-size: 1em;
+}
+.field input:focus, .field select:focus {
+    outline: none;
+    border-color: var(--brand2);
+    box-shadow: 0 0 0 3px rgba(45, 125, 255, 0.3);
 }
 
-/* ====== Marcadores de Mapa ====== */
+/* ==========================================================================
+   7. MARCADORES DE MAPA
+   ========================================================================== */
 .marker-dot {
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.8);
-    box-shadow: 0 0 8px rgba(0,0,0,0.7);
-    transition: transform 0.2s ease-in-out;
-}
-
-.marker-dot.highlighted {
-    transform: scale(1.5);
-    border: 3px solid var(--brand1);
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    box-shadow: var(--shadow-sm);
 }
 
 .marker-red { background-color: var(--red); }
 .marker-orange { background-color: var(--orange); }
+.marker-blue { background-color: var(--brand2); }
 
-/* ====== Tabla de Unidades Expandible ====== */
-.unit-row.occupied {
-    cursor: pointer;
-}
-.unit-row.occupied:hover {
-    background-color: var(--panel-2);
-}
+/* ==========================================================================
+   8. CORRECCIONES Y AJUSTES FINALES
+   ========================================================================== */
 
-.expand-icon {
-    transition: transform 0.3s ease;
-    display: inline-block;
-}
+/* --- Corrección de Contraste para Pop-up de Detalles de Usuario --- */
 
-.unit-row.expanded .expand-icon {
-    transform: rotate(90deg);
+/* Establece un color de texto base casi blanco para todo el contenido del pop-up */
+#user-details-content {
+    color: var(--text); /* var(--text) es #f4f6fb */
 }
 
-.details-row {
-    display: none;
+/* Asegura que los encabezados y elementos de lista hereden el color correcto */
+#user-details-content h3,
+#user-details-content h4,
+#user-details-content li {
+    color: inherit;
 }
 
-.details-cell {
-    padding: 15px 20px 15px 40px !important;
-    background-color: var(--panel-2);
+/* Aumenta el contraste de los textos en negrita (como los nombres de contacto) */
+#user-details-content li b {
+    color: #ffffff; /* Blanco puro para máxima legibilidad */
 }
-
-.details-cell ul {
-    margin: 5px 0 0 0;
-    padding-left: 20px;
-    list-style-type: square;
-}
-
-.details-cell li {
-    padding: 5px 0;
-    color: var(--muted);
-}
-
-.stats-column {
-    font-size: 0.9em;
-    color: var(--muted);
-    text-align: center;
-    font-family: monospace;
-}
-
