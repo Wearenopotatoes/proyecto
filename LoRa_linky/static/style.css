@@ -1,279 +1,132 @@
-/* ====== Base ====== */
-:root{
-  --bg:#0b0b10;
-  --panel:#12121a;
-  --panel-2:#151526;
-  --text:#f4f6fb;
-  --muted:#a9b0c0;
-  --brand1:#00ff9d;
-  --brand2:#2d7dff;
-  --brand3:#ff3366;
-  --brand4:#9b5cff;
-  --red:#ff3b30;
-  --orange:#ff9500;
-  --green:#30d158;
+/* ====== Base y Tema Oscuro ====== */
+:root {
+  --bg: #0b0b10;
+  --panel: #12121a;
+  --text: #f4f6fb;
+  --muted: #a9b0c0;
+  --brand1: #00ff9d;
+  --brand2: #2d7dff;
+  --red: #ff3b30;
+  --orange: #ff9500;
+  --green: #30d158;
   --border: #21223a;
-  --shadow: 0 0 0 1px rgba(41,48,86,.35);
 }
-*{ box-sizing: border-box; }
-html,body{ height:100%; }
-body{
-  margin:0;
-  background: radial-gradient(1200px 600px at 10% -10%, rgba(45,125,255,.15), transparent 60%),
-            radial-gradient(1200px 600px at 110% 0%, rgba(155,92,255,.15), transparent 60%),
-            var(--bg);
-  color: var(--text);
-  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
-  font-size:16px;
-  line-height:1.4;
-  overflow: hidden;
-}
-
-/* ====== Utilities ====== */
-.btn {
-  font-size: 14px;
-  padding: 8px 16px;
-  border-radius: 5px;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  border: 1px solid transparent;
-  background-color: transparent;
-  color: var(--text);
-}
-
-.btn:hover {
-  filter: brightness(1.2);
-}
-
-.btn.primary {
-  background-color: var(--brand2);
-  border-color: var(--brand2);
-  color: white;
-}
-
-.btn.success {
-  background-color: var(--green);
-  border-color: var(--green);
-  color: #0b0b10;
-}
-
-.btn.danger {
-  background-color: var(--red);
-  border-color: var(--red);
-  color: white;
-}
-
-.badge {
-  font-size: 0.8em;
-  padding: 4px 8px;
-  border-radius: 4px;
-  color: white;
-  text-transform: uppercase;
-  font-weight: bold;
-}
-
-.badge.red { background-color: var(--red); }
-.badge.orange { background-color: var(--orange); }
-.badge.green { background-color: var(--green); }
-
-.unit-tag {
-  background-color: var(--brand1);
-  color: var(--bg);
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.8em;
-  font-weight: bold;
-}
-
-/* ====== Layout ====== */
-.app-header {
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: var(--panel);
-  border-bottom: 1px solid var(--border);
-  height: 80px;
-}
-.brand {
-  display: flex;
-  align-items: center;
-}
-.brand h1 {
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
   margin: 0;
-  font-size: 1.5em;
-  font-weight: 300;
-  letter-spacing: 1px;
-}
-.logo-dot {
-  width: 15px;
-  height: 15px;
-  background-color: var(--brand1);
-  border-radius: 50%;
-  box-shadow: 0 0 10px var(--brand1);
-  margin-right: 10px;
-}
-
-.layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  padding: 20px;
-  height: calc(100vh - 80px); /* Adjust based on header height */
-  overflow: hidden;
-}
-
-
-.map-panel, .table-panel {
-  background-color: var(--panel);
-  border-radius: 10px;
-  padding: 20px;
+  background: radial-gradient(1200px 600px at 10% -10%, rgba(45,125,255,.15), transparent 60%), var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   display: flex;
   flex-direction: column;
 }
 
-.map-panel {
-  height: 100%;
-}
-#map {
-  flex-grow: 1;
-  border-radius: 8px;
-  margin-top: 10px;
-  background-color: var(--bg);
-}
-
-.panel-header {
+/* ====== Cabecera ====== */
+.app-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-}
-.panel-header h2 {
-  margin: 0;
-}
-
-.table-wrap {
-  flex-grow: 1;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--muted) transparent;
-}
-.table-wrap::-webkit-scrollbar {
-  width: 8px;
-}
-.table-wrap::-webkit-scrollbar-thumb {
-  background-color: var(--muted);
-  border-radius: 4px;
-}
-
-.grid {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.grid th, .grid td {
-  padding: 12px 15px;
-  text-align: left;
+  padding: 10px 20px;
+  background-color: var(--panel);
   border-bottom: 1px solid var(--border);
 }
+.brand { display: flex; align-items: center; gap: 10px; }
+.logo-dot { width: 12px; height: 12px; background-color: var(--brand1); border-radius: 50%; }
+.brand h1 { font-size: 1.2em; margin: 0; }
 
-.grid th {
-  background-color: var(--panel-2);
-  font-weight: normal;
-  text-transform: uppercase;
-  font-size: 0.9em;
-  color: var(--muted);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.grid .actions {
+/* ====== Layout Principal ====== */
+.layout { display: flex; flex-grow: 1; overflow: hidden; }
+.map-panel { flex: 2; }
+.table-panel {
+  flex: 1;
   display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  background-color: var(--panel);
+  border-left: 1px solid var(--border);
 }
-.grid .actions .btn {
-  font-size: 0.8em;
-  padding: 6px 10px;
-}
+#map { width: 100%; height: 100%; }
 
-/* ====== Dialog ====== */
+/* ====== Panel de la Tabla ====== */
+.panel-header { padding: 15px 20px; border-bottom: 1px solid var(--border); }
+.panel-header h2 { margin: 0; font-size: 1.1em; }
+.table-wrap { overflow-y: auto; flex-grow: 1; }
+table { width: 100%; border-collapse: collapse; }
+th, td {
+  padding: 12px 20px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9em;
+}
+thead { position: sticky; top: 0; background-color: var(--panel); }
+tbody tr:hover { background-color: rgba(255, 255, 255, 0.05); }
+td.actions { display: flex; gap: 8px; }
+
+/* ====== Badges de Estado ====== */
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 15px;
+  font-weight: bold;
+  font-size: 0.8em;
+  text-transform: uppercase;
+  color: #fff;
+  text-align: center;
+}
+.status-badge.accidente { background-color: var(--red); }
+.status-badge.en_camino { background-color: var(--orange); }
+.status-badge.resuelto { background-color: var(--green); }
+
+/* ====== Botones ====== */
+.btn {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  background-color: #2a2a3a;
+  color: var(--text);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.btn:hover:not(:disabled) { background-color: #3a3a4a; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn.danger { background-color: var(--red); border-color: var(--red); color: white; }
+.btn.danger:hover { background-color: #c53027; }
+
+/* ====== Pop-up (Dialog) ====== */
 dialog {
   padding: 0;
   border: 1px solid var(--border);
   background-color: transparent;
   border-radius: 10px;
 }
-dialog::backdrop {
-  background-color: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(3px);
-}
+dialog::backdrop { background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(3px); }
 .dialog-card {
   background-color: var(--panel);
   padding: 20px;
   color: var(--text);
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
   min-width: 300px;
 }
-.dialog-card h3 {
-  margin: 0;
-}
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.field label {
-  font-size: 0.9em;
-  color: var(--muted);
-}
+.dialog-card h3 { margin: 0 0 15px 0; }
 .field select {
+  width: 100%;
   padding: 8px;
   border-radius: 5px;
   border: 1px solid var(--border);
   background-color: var(--bg);
   color: var(--text);
 }
-.dialog-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 10px;
-}
+.dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+.btn.primary { background-color: var(--brand2); border-color: var(--brand2); color: white; }
 
-/* ====== Estilos para Marcadores de Mapa Personalizados ====== */
-.marker-dot {
-    width: 20px;
-    height: 20px;
+/* ====== Marcadores de Mapa ====== */
+.marker-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.8); /* Borde blanco semi-transparente */
-    box-shadow: 0 0 8px rgba(0,0,0,0.7);
+    border: 2px solid white;
+    box-shadow: 0 0 5px rgba(0,0,0,0.5);
 }
-
-.marker-red {
-    background-color: var(--red);
-}
-
-.marker-orange {
-    background-color: var(--orange);
-}
-
-/* ====== Estilo para el Botón de Localización ====== */
-.btn.locate {
-  background-color: var(--brand4); /* Usamos el color morado del tema */
-  border-color: var(--brand4);
-  color: white;
-}
-
-.btn .icon {
-    width: 14px;
-    height: 14px;
-    margin-right: 6px;
-}
+.marker-icon.status-accidente { background-color: var(--red); }
+.marker-icon.status-en_camino { background-color: var(--orange); }
+.marker-icon.status-resuelto { background-color: var(--green); }

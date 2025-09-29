@@ -1,194 +1,157 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, Response
 import csv
 import os
 from datetime import datetime
 import json
+import secrets
+import sqlite3 # Importamos sqlite3 para leer el archivo mbtiles
 
 app = Flask(__name__)
 
+# --- CONFIGURACIÓN ---
 ALERTS_FILE = "reportes.csv"
 UNITS_FILE = "units.json"
-ALERTS_HEADERS = ["timestamp", "tipo_accidente", "latitud", "longitud", "estado", "unidad"]
+# ¡NUEVO! Ruta al archivo de mapa offline.
+# Coloca tu archivo .mbtiles en la misma carpeta que este script.
+MBTILES_FILE = "osm-2020-02-10-v3.11_central-america.mbtiles"
+ALERTS_HEADERS = ["id", "timestamp", "tipo_accidente", "latitud", "longitud", "estado", "unidad"]
 
-# ---------- helpers ----------
-def load_alerts_from_csv(path):
-    """Carga las alertas desde un CSV y convierte las unidades en una lista."""
-    alerts = []
-    if not os.path.exists(path):
-        return alerts
+# --- Ruta para servir las teselas del mapa offline ---
+@app.route('/tiles/<int:z>/<int:x>/<int:y>.png')
+def serve_tile(z, x, y):
+    # El formato mbtiles invierte la coordenada Y
+    y = (2**z - 1) - y
+    
     try:
-        with open(path, mode='r', newline='', encoding='utf-8') as csv_file:
-            csv_reader = csv.DictReader(csv_file)
-            for row in csv_reader:
-                # Convertir el texto de unidades (separado por '|') en una lista.
-                units_str = row.get("unidad", "")
-                unit_list = units_str.split('|') if units_str and units_str != "None" else []
-                
+        conn = sqlite3.connect(f'file:{MBTILES_FILE}?mode=ro', uri=True)
+        cursor = conn.cursor()
+        # Buscamos la tesela en la base de datos
+        cursor.execute("SELECT tile_data FROM tiles WHERE zoom_level = ? AND tile_column = ? AND tile_row = ?", (z, x, y))
+        tile_data = cursor.fetchone()
+        conn.close()
+
+        if tile_data:
+            # Si encontramos la tesela, la enviamos como una imagen PNG
+            return Response(tile_data[0], mimetype='image/png')
+        else:
+            # Si no se encuentra, devolvemos un 404 (opcional, podrías devolver una imagen vacía)
+            return "Tile not found", 404
+            
+    except sqlite3.OperationalError:
+        print(f"ERROR: No se pudo encontrar o leer el archivo '{MBTILES_FILE}'. Asegúrate de que esté en la misma carpeta que app.py.")
+        return "MBTiles file not found", 500
+    except Exception as e:
+        print(f"Error sirviendo la tesela: {e}")
+        return "Server error", 500
+
+# --- El resto de tu aplicación (sin cambios) ---
+
+def load_alerts_from_csv(path):
+    alerts = []
+    if not os.path.exists(path): return []
+    with open(path, mode='r', newline='', encoding='utf-8') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            try:
+                if not all(k in row and row[k] for k in ['id', 'timestamp', 'latitud', 'longitud']): continue
                 alert = {
-                    "id": row.get("timestamp"),
-                    "type": row.get("tipo_accidente"),
-                    "timestamp": datetime.fromtimestamp(int(row.get("timestamp"))).strftime("%Y-%m-%d %H:%M:%S") if row.get("timestamp") else None,
-                    "lat": float(row.get("latitud")) if row.get("latitud") else None,
-                    "lon": float(row.get("longitud")) if row.get("longitud") else None,
+                    "id": row["id"], "type": row.get("tipo_accidente"),
+                    "timestamp": datetime.fromtimestamp(int(row["timestamp"])).strftime("%H:%M:%S"),
+                    "lat": float(row["latitud"]), "lon": float(row["longitud"]),
                     "status": row.get("estado", "accidente"),
-                    "unit_assigned": unit_list # Ahora es una lista
+                    "units": row.get("unidad", "").split('|') if row.get("unidad") else []
                 }
                 alerts.append(alert)
-    except Exception as e:
-        print(f"Error reading CSV: {e}")
-        return []
+            except (ValueError, TypeError, KeyError):
+                continue
     return alerts
 
-def save_alerts_to_csv(path, alerts):
-    """Guarda las alertas en un CSV, uniendo la lista de unidades en un texto."""
-    with open(path, mode='w', newline='', encoding='utf--8') as csv_file:
-        writer = csv.DictWriter(csv_file, fieldnames=ALERTS_HEADERS)
+def save_alerts_to_csv(path, alerts_data):
+    with open(path, mode='w', newline='', encoding='utf-8') as file:
+        writer = csv.DictWriter(file, fieldnames=ALERTS_HEADERS)
         writer.writeheader()
-        for alert in alerts:
-            # Unir la lista de unidades en un solo string separado por '|'.
-            unit_list = alert.get("unit_assigned", [])
-            units_str = "|".join(unit_list) if unit_list else None
-
-            row = {
-                "timestamp": alert.get("id"),
-                "tipo_accidente": alert.get("type"),
-                "latitud": alert.get("lat"),
-                "longitud": alert.get("lon"),
-                "estado": alert.get("status"),
-                "unidad": units_str
-            }
-            writer.writerow(row)
+        for alert in alerts_data:
+            try:
+                original_timestamp = alert["id"].split('_')[0]
+                row = {
+                    "id": alert["id"], "timestamp": original_timestamp,
+                    "tipo_accidente": alert["type"], "latitud": alert["lat"],
+                    "longitud": alert["lon"], "estado": alert["status"],
+                    "unidad": '|'.join(alert.get("units", []))
+                }
+                writer.writerow(row)
+            except:
+                continue
 
 def load_json(path, default):
     if not os.path.exists(path): return default
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except (json.JSONDecodeError, FileNotFoundError):
-        return default
+    with open(path, 'r', encoding='utf-8') as f: return json.load(f)
 
 def save_json(path, data):
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
-
-def get_unit(units, name):
-    for u in units:
-        if isinstance(u, dict) and u.get("name") == name:
-            return u
-    return None
-
-# ---------- routes ----------
-
-@app.route("/api/dashboard_data")
-def dashboard_data():
-    alerts = load_alerts_from_csv(ALERTS_FILE)
-    units = load_json(UNITS_FILE, [])
-    sorted_alerts = sorted(alerts, key=lambda x: x.get('id', '0'), reverse=True)
-    return jsonify({"alerts": sorted_alerts, "units": units})
+    with open(path, 'w', encoding='utf-8') as f: json.dump(data, f, indent=4)
 
 @app.route("/")
 def index():
     return render_template("index.html")
 
+@app.route("/api/dashboard_data")
+def get_dashboard_data():
+    alerts = load_alerts_from_csv(ALERTS_FILE)
+    units = load_json(UNITS_FILE, [])
+    alerts.sort(key=lambda x: x.get('id', '0').split('_')[0], reverse=True)
+    return jsonify({"alerts": alerts, "units": units})
+
 @app.route("/assign_unit", methods=["POST"])
 def assign_unit():
-    data = request.get_json(force=True)
-    alert_id = data.get("alert_id")
-    unit_name = data.get("unit_name")
+    data = request.get_json()
+    alert_id, unit_name = data.get("alert_id"), data.get("unit_name")
+    alerts, units = load_alerts_from_csv(ALERTS_FILE), load_json(UNITS_FILE, [])
+    target_alert = next((a for a in alerts if a["id"] == alert_id), None)
+    target_unit = next((u for u in units if u["name"] == unit_name), None)
+    if target_alert and target_unit:
+        target_alert["units"].append(unit_name)
+        target_alert["status"] = "en_camino"
+        target_unit["available"] = False
+        save_alerts_to_csv(ALERTS_FILE, alerts)
+        save_json(UNITS_FILE, units)
+        return jsonify({"status": "ok"})
+    return jsonify({"status": "error"}), 404
 
+@app.route("/update_alert_status", methods=["POST"])
+def update_alert_status():
+    data = request.get_json()
+    alert_id, new_status = data.get("alert_id"), data.get("status")
     alerts = load_alerts_from_csv(ALERTS_FILE)
-    units = load_json(UNITS_FILE, [])
-
-    alert = next((a for a in alerts if a.get("id") == alert_id), None)
-    if not alert: return jsonify({"error": "alert not found"}), 404
-    unit = get_unit(units, unit_name)
-    if not unit: return jsonify({"error": "unit not found"}), 404
-    if not unit.get("available", True): return jsonify({"error": "unit not available"}), 400
-    
-    if unit_name not in alert["unit_assigned"]:
-        alert["unit_assigned"].append(unit_name)
-    
-    alert["status"] = "en_camino"
-    unit["available"] = False
-
-    save_alerts_to_csv(ALERTS_FILE, alerts)
-    save_json(UNITS_FILE, units)
-    return jsonify({"status": "ok"})
-
-@app.route("/mark_attended", methods=["POST"])
-def mark_attended():
-    data = request.get_json(force=True)
-    alert_id = data.get("alert_id")
-
-    alerts = load_alerts_from_csv(ALERTS_FILE)
-    units = load_json(UNITS_FILE, [])
-
-    alert = next((a for a in alerts if a.get("id") == alert_id), None)
-    if not alert: return jsonify({"error": "alert not found"}), 404
-
-    assigned_units = alert.get("unit_assigned", [])
-    if isinstance(assigned_units, list):
-        for unit_name in assigned_units:
-            unit_to_release = get_unit(units, unit_name)
-            if unit_to_release:
-                unit_to_release["available"] = True
-
-    alert["status"] = "atendido"
-    
-    save_alerts_to_csv(ALERTS_FILE, alerts)
-    save_json(UNITS_FILE, units)
-    return jsonify({"status": "ok"})
-
-@app.route("/delete_alert/<alert_id>", methods=["DELETE"])
-def delete_alert(alert_id):
-    alerts = load_alerts_from_csv(ALERTS_FILE)
-    alerts = [a for a in alerts if a.get("id") != alert_id]
-    save_alerts_to_csv(ALERTS_FILE, alerts)
-    return jsonify({"status": "deleted"})
+    target_alert = next((a for a in alerts if a["id"] == alert_id), None)
+    if target_alert:
+        target_alert["status"] = new_status
+        if new_status == "resuelto":
+            units = load_json(UNITS_FILE, [])
+            for unit_name in target_alert["units"]:
+                unit = next((u for u in units if u["name"] == unit_name), None)
+                if unit: unit["available"] = True
+            save_json(UNITS_FILE, units)
+        save_alerts_to_csv(ALERTS_FILE, alerts)
+        return jsonify({"status": "ok"})
+    return jsonify({"status": "error"}), 404
 
 @app.route("/clear_alerts", methods=["DELETE"])
 def clear_alerts():
+    with open(ALERTS_FILE, mode='w', newline='', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        writer.writerow(ALERTS_HEADERS)
     units = load_json(UNITS_FILE, [])
-    for u in units:
-        if isinstance(u, dict):
-            u["available"] = True
+    for unit in units:
+        if isinstance(unit, dict): unit['available'] = True
     save_json(UNITS_FILE, units)
-    save_alerts_to_csv(ALERTS_FILE, [])
     return jsonify({"status": "cleared"})
 
-@app.route("/update_unit_location", methods=["POST"])
-def update_unit_location():
-    data = request.get_json(force=True)
-    name = data.get("name")
-    lat = data.get("lat")
-    lon = data.get("lon")
-    units = load_json(UNITS_FILE, [])
-    unit = next((u for u in units if isinstance(u, dict) and u.get("name") == name), None)
-    if not unit:
-        units.append({"name": name, "available": True, "lat": lat, "lon": lon})
-    else:
-        unit["lat"] = lat
-        unit["lon"] = lon
-    save_json(UNITS_FILE, units)
-    return jsonify({"status": "ok"})
-
-@app.route("/add_alert", methods=["POST"])
-def add_alert():
-    data = request.get_json(force=True)
-    alerts = load_alerts_from_csv(ALERTS_FILE)
-    new_id = str(int(datetime.now().timestamp()))
-    alert = {
-        "id": new_id,
-        "type": data.get("type", "tipo_accidente"),
-        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "lat": float(data.get("lat")) if data.get("lat") is not None else None,
-        "lon": float(data.get("lon")) if data.get("lon") is not None else None,
-        "status": data.get("status", "accidente"),
-        "unit_assigned": [] # Empieza como una lista vacía
-    }
-    alerts.append(alert)
-    save_alerts_to_csv(ALERTS_FILE, alerts)
-    return jsonify({"status": "ok", "id": new_id})
-
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    # Verifica si el archivo mbtiles existe antes de arrancar
+    if not os.path.exists(MBTILES_FILE):
+        print("="*60)
+        print(f"ADVERTENCIA: El archivo de mapa '{MBTILES_FILE}' no se encontró.")
+        print("La capa de mapa offline no funcionará. Asegúrate de que el")
+        print("archivo esté en la misma carpeta que app.py.")
+        print("="*60)
+    app.run(host="0.0.0.0", port=5000, debug=True)

@@ -1,0 +1,22 @@
+[
+    {
+        "name": "MOV-01",
+        "available": true
+    },
+    {
+        "name": "AMB-05",
+        "available": true
+    },
+    {
+        "name": "BR-02",
+        "available": true
+    },
+    {
+        "name": "SUP-01",
+        "available": true
+    },
+    {
+        "name": "PAT-15",
+        "available": true
+    }
+]
