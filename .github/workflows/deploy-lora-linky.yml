@@ -1,0 +1,330 @@
+name: Deploy LoRa Linky to Server
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'LoRa_linky/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup SSH key
+      uses: webfactory/ssh-agent@v0.7.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Add server to known hosts
+      run: |
+        echo "Adding server ${{ secrets.SERVER_HOST }} to known hosts..."
+        ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+        echo "Known hosts updated successfully"
+
+    - name: Test SSH connection
+      run: |
+        echo "Testing SSH connection to ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }}..."
+        ssh -o ConnectTimeout=10 ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} "echo 'SSH connection successful'"
+
+    - name: Create deployment directory
+      run: |
+        ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} "mkdir -p ${{ secrets.LORA_DEPLOY_PATH }}"
+
+    - name: Copy LoRa Linky project files to server
+      run: |
+        scp -r ./LoRa_linky/* ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.LORA_DEPLOY_PATH }}/
+
+    - name: Create requirements.txt and Dockerfile
+      run: |
+        ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+          cd ${{ secrets.LORA_DEPLOY_PATH }}
+
+          # Create requirements.txt
+          cat > requirements.txt << EOL
+        Flask==2.3.3
+        gunicorn==21.2.0
+        EOL
+
+          # Create Dockerfile
+          cat > Dockerfile << EOL
+        FROM python:3.11-slim
+
+        WORKDIR /app
+
+        COPY requirements.txt .
+
+        RUN pip install --no-cache-dir -r requirements.txt
+
+        COPY . .
+
+        EXPOSE 5000
+
+        # Use Gunicorn for production
+        CMD ["gunicorn", "app:app", "-w", "4", "--bind", "0.0.0.0:5000"]
+        EOL
+
+          echo "✅ Requirements and Dockerfile created"
+        EOF
+
+    - name: Create docker-compose.yml
+      run: |
+        ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+          cd ${{ secrets.LORA_DEPLOY_PATH }}
+
+          cat > docker-compose.yml << EOL
+        version: '3.8'
+
+        services:
+          lora-app:
+            build: .
+            container_name: lora_linky_app
+            restart: unless-stopped
+            ports:
+              - "5000:5000"
+            networks:
+              - lora_network
+
+        networks:
+          lora_network:
+            driver: bridge
+        EOL
+
+          echo "✅ Docker Compose configuration created"
+        EOF
+
+    - name: Create nginx configuration
+      run: |
+        ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+          cd ${{ secrets.LORA_DEPLOY_PATH }}
+
+          # Create nginx directory
+          mkdir -p nginx
+
+          cat > nginx/nginx.conf << EOL
+        events {
+            worker_connections 1024;
+        }
+
+        http {
+            upstream lora_app {
+                server lora-app:5000;
+            }
+
+            # HTTP server - redirect to HTTPS
+            server {
+                listen 80;
+                server_name ${{ secrets.LORA_DOMAIN || 'lora.loralink.live' }};
+
+                location /.well-known/acme-challenge/ {
+                    root /var/www/certbot;
+                }
+
+                location / {
+                    return 301 https://\$server_name\$request_uri;
+                }
+            }
+
+            # HTTPS server
+            server {
+                listen 443 ssl;
+                server_name ${{ secrets.LORA_DOMAIN || 'lora.loralink.live' }};
+
+                ssl_certificate /etc/letsencrypt/live/${{ secrets.LORA_DOMAIN || 'lora.loralink.live' }}/fullchain.pem;
+                ssl_certificate_key /etc/letsencrypt/live/${{ secrets.LORA_DOMAIN || 'lora.loralink.live' }}/privkey.pem;
+
+                location / {
+                    proxy_pass http://lora_app;
+                    proxy_set_header Host \$host;
+                    proxy_set_header X-Real-IP \$remote_addr;
+                    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto \$scheme;
+                }
+            }
+        }
+        EOL
+
+          echo "✅ Nginx configuration created"
+        EOF
+
+    - name: Update docker-compose with nginx and certbot
+      run: |
+        ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+          cd ${{ secrets.LORA_DEPLOY_PATH }}
+
+          cat > docker-compose.yml << EOL
+        version: '3.8'
+
+        services:
+          lora-app:
+            build: .
+            container_name: lora_linky_app
+            restart: unless-stopped
+            networks:
+              - lora_network
+
+          nginx:
+            image: nginx:alpine
+            container_name: lora_nginx
+            restart: unless-stopped
+            ports:
+              - "80:80"
+              - "443:443"
+            volumes:
+              - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+              - ./certbot/conf:/etc/letsencrypt
+              - ./certbot/www:/var/www/certbot
+            depends_on:
+              - lora-app
+            networks:
+              - lora_network
+
+          certbot:
+            image: certbot/certbot
+            container_name: lora_certbot
+            restart: "no"
+            volumes:
+              - ./certbot/conf:/etc/letsencrypt
+              - ./certbot/www:/var/www/certbot
+            entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait \$\${!}; done;'"
+
+        networks:
+          lora_network:
+            driver: bridge
+        EOL
+
+          echo "✅ Updated Docker Compose with nginx and certbot"
+        EOF
+
+    - name: Create SSL scripts
+      run: |
+        ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+          cd ${{ secrets.LORA_DEPLOY_PATH }}
+
+          # Create scripts directory
+          mkdir -p scripts
+
+          # Create SSL initialization script
+          cat > scripts/init-ssl.sh << EOL
+        #!/bin/bash
+
+        DOMAIN="${{ secrets.LORA_DOMAIN || 'lora.loralink.live' }}"
+        EMAIL="${{ secrets.SSL_EMAIL || 'admin@loralink.live' }}"
+
+        echo "Initializing SSL for domain: \$DOMAIN"
+
+        # Create required directories
+        mkdir -p certbot/conf certbot/www
+
+        # Request SSL certificate
+        docker compose run --rm certbot certonly --webroot --webroot-path=/var/www/certbot/ --email \$EMAIL --agree-tos --no-eff-email -d \$DOMAIN
+
+        if [ \$? -eq 0 ]; then
+            echo "✅ SSL certificate obtained successfully"
+            # Restart nginx to use the new certificate
+            docker compose restart nginx
+        else
+            echo "❌ Failed to obtain SSL certificate"
+            exit 1
+        fi
+        EOL
+
+          # Create SSL renewal script
+          cat > scripts/renew-ssl.sh << EOL
+        #!/bin/bash
+
+        cd ${{ secrets.LORA_DEPLOY_PATH }}
+
+        echo "Renewing SSL certificates..."
+        docker compose run --rm certbot renew
+
+        if [ \$? -eq 0 ]; then
+            echo "✅ SSL certificates renewed successfully"
+            docker compose restart nginx
+        else
+            echo "❌ SSL renewal failed"
+        fi
+        EOL
+
+          # Make scripts executable
+          chmod +x scripts/*.sh
+
+          echo "✅ SSL scripts created"
+        EOF
+
+    - name: Deploy application
+      run: |
+        ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+          cd ${{ secrets.LORA_DEPLOY_PATH }}
+
+          # Stop existing containers
+          docker compose down || true
+
+          # Build and start new containers
+          docker compose up -d --build
+
+          # Wait for services to be ready
+          sleep 15
+
+          # Check if containers are running
+          docker compose ps
+
+          # Clean up unused images
+          docker image prune -f
+
+          echo "✅ LoRa Linky deployment completed successfully!"
+        EOF
+
+    - name: Setup SSL certificates (first time only)
+      run: |
+        ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+          cd ${{ secrets.LORA_DEPLOY_PATH }}
+
+          # Check if SSL certificate already exists
+          if [ ! -f "./certbot/conf/live/${{ secrets.LORA_DOMAIN || 'lora.loralink.live' }}/fullchain.pem" ]; then
+            echo "🔒 SSL certificate not found, setting up SSL..."
+
+            # Run SSL setup script
+            if bash scripts/init-ssl.sh; then
+              echo "✅ SSL setup completed successfully!"
+
+              # Setup SSL renewal cron job
+              echo "Setting up SSL renewal cron job..."
+              (crontab -l 2>/dev/null; echo "0 0,12 * * * cd ${{ secrets.LORA_DEPLOY_PATH }} && bash scripts/renew-ssl.sh") | crontab -
+              echo "✅ SSL renewal cron job installed"
+            else
+              echo "❌ SSL setup failed"
+              echo "You can manually run: bash scripts/init-ssl.sh"
+            fi
+          else
+            echo "✅ SSL certificate already exists, skipping SSL setup"
+
+            # Ensure renewal cron job exists
+            if ! crontab -l 2>/dev/null | grep -q "renew-ssl.sh"; then
+              echo "Adding SSL renewal cron job..."
+              (crontab -l 2>/dev/null; echo "0 0,12 * * * cd ${{ secrets.LORA_DEPLOY_PATH }} && bash scripts/renew-ssl.sh") | crontab -
+              echo "✅ SSL renewal cron job installed"
+            fi
+          fi
+        EOF
+
+    - name: Verify deployment
+      run: |
+        ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+          cd ${{ secrets.LORA_DEPLOY_PATH }}
+
+          echo "📊 Checking container status..."
+          docker compose ps
+
+          echo "📋 Checking container logs..."
+          docker compose logs --tail=10
+
+          echo "🌐 Testing local connection..."
+          curl -f http://localhost || echo "⚠️  HTTP connection failed"
+
+          echo "✅ Deployment verification completed"
+        EOF

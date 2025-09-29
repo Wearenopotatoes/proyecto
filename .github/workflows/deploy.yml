@@ -1,0 +1,89 @@
+name: Deploy Webapp to Server
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup SSH key
+      uses: webfactory/ssh-agent@v0.7.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Add server to known hosts
+      run: |
+        echo "Adding server ${{ secrets.SERVER_HOST }} to known hosts..."
+        ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+        echo "Known hosts updated successfully"
+
+    - name: Test SSH connection
+      run: |
+        echo "Testing SSH connection to ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }}..."
+        ssh -o ConnectTimeout=10 ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} "echo 'SSH connection successful'"
+
+    - name: Create webapp deployment directory
+      run: |
+        ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} "mkdir -p ${{ secrets.DEPLOY_PATH }}/proyecto/LoRa_linky"
+
+    - name: Copy webapp files to server
+      run: |
+        scp -r ./LoRa_linky/* ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }}:${{ secrets.DEPLOY_PATH }}/proyecto/LoRa_linky/
+
+    - name: Deploy webapp container
+      run: |
+        ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+          cd ${{ secrets.DEPLOY_PATH }}
+
+          # Stop and rebuild only the webapp container
+          docker compose stop webapp || true
+          docker compose rm -f webapp || true
+
+          # Build and start webapp container
+          docker compose up -d --build webapp
+
+          # Wait for webapp to be ready
+          sleep 5
+
+          # Check if webapp container is running
+          docker compose ps webapp
+
+          # Clean up unused images
+          docker image prune -f
+
+          echo "✅ Webapp deployment completed successfully!"
+        EOF
+
+    - name: Setup SSL certificates for webapp domain (first time only)
+      run: |
+        ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+          cd ${{ secrets.DEPLOY_PATH }}
+
+          # Check if SSL certificate for webapp domain already exists
+          if [ ! -f "/etc/letsencrypt/live/loralink.live/fullchain.pem" ]; then
+            echo "🔒 Setting up SSL for webapp domain..."
+
+            # Stop nginx temporarily
+            docker compose stop nginx
+
+            # Generate SSL certificate for webapp domain
+            docker run --rm -v /etc/letsencrypt:/etc/letsencrypt -v /var/lib/letsencrypt:/var/lib/letsencrypt -v /var/www/certbot:/var/www/certbot certbot/certbot:latest certonly --webroot --webroot-path=/var/www/certbot --email ${{ secrets.SSL_EMAIL }} --agree-tos --no-eff-email -d loralink.live
+
+            # Restart nginx with updated SSL config
+            docker compose up -d nginx
+
+            echo "✅ SSL setup for webapp completed!"
+          else
+            echo "✅ SSL certificate for webapp already exists"
+          fi
+
+          # Restart nginx to ensure both domains are properly configured
+          docker compose restart nginx
+        EOF
