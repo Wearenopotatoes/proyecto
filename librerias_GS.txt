@@ -1,0 +1,25 @@
+1. GS (Gestión y Supervisión) - Frontend
+Estas son las librerías de JavaScript que se ejecutan en el navegador del operador para dar vida al dashboard.
+
+Leaflet.js
+Leaflet es una librería de JavaScript de código abierto, ligera y potente, para crear mapas interactivos en la web. Es la base de toda la visualización geoespacial de nuestro dashboard. La hemos utilizado para inicializar el mapa, centrarlo en El Salvador y añadir las capas de mapa base (tanto las de calles de OpenStreetMap como las de satélite de Esri). Toda la lógica de creación, posicionamiento y eliminación de marcadores de emergencia se gestiona a través de las funciones que Leaflet proporciona.
+
+Leaflet.markercluster
+Este es un plugin para Leaflet que soluciona el problema de tener demasiados marcadores en una misma zona. La librería agrupa automáticamente los marcadores cercanos en un "clúster" (un círculo con un número), que se expande al hacer clic o zoom. Lo implementamos para mantener el mapa limpio y legible, especialmente en escenarios con múltiples emergencias simultáneas en un área urbana, mejorando significativamente la experiencia del operador.
+
+2. GS (Gestión y Supervisión) - Backend
+Estas son las librerías de Python que utiliza nuestro servidor local para servir la aplicación web.
+
+Flask
+Flask es un microframework de Python para el desarrollo de aplicaciones web. Es conocido por su simplicidad y flexibilidad. En nuestro proyecto, lo utilizamos para crear un servidor web minimalista (app.py). La única responsabilidad de este servidor es recibir las peticiones del navegador y servir los archivos estáticos que componen el GS: la página principal index.html, la hoja de estilos styles.css y el archivo de lógica script.js.
+
+
+
+3. Placas (ESP32 / Arduino)
+Estas son las librerías de C++ utilizadas en el Arduino IDE para programar las placas Heltec.
+
+LoRaWan_APP.h (Parte de la librería Heltec)
+Esta es la librería oficial y de alto nivel proporcionada por Heltec para interactuar con el hardware de sus placas ESP32 LoRa V3. Aunque su nombre sugiere LoRaWAN, también expone una API de bajo nivel (RadioEvents) que nos permite realizar comunicación punto a punto. La utilizamos para inicializar la radio LoRa, configurar la frecuencia (915 MHz), definir los parámetros de transmisión y recepción, y manejar los eventos de envío y recepción de paquetes de forma asíncrona.
+
+WiFi.h
+Esta es la librería estándar del framework de Arduino para el ESP32, que proporciona toda la funcionalidad para manejar la conectividad Wi-Fi. En nuestro proyecto, la usamos en la placa emisora para crear un punto de acceso (Access Point) con un nombre y contraseña específicos. Esto permite que la aplicación de Android se conecte directamente a la placa para enviarle el JSON del reporte en el modo de operación offline (Plan B).

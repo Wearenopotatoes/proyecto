@@ -1,0 +1,24 @@
+## OkHttp
+OkHttp es una librería de código abierto creada por Square, que se ha convertido en el estándar de facto para realizar comunicaciones de red en Android. Funciona como un cliente HTTP muy eficiente y robusto, encargado de enviar peticiones a un servidor y recibir sus respuestas. Maneja de forma automática tareas complejas como la gestión de conexiones, la compresión de datos para ahorrar batería y el manejo de errores comunes de red, haciendo que la comunicación sea mucho más fiable.
+
+En nuestra aplicación, OkHttp es el mensajero principal. Cada vez que necesitamos hablar con la API de LoRaLink, ya sea para iniciar sesión, registrar un nuevo usuario, obtener los datos del perfil o enviar un reporte de emergencia, usamos OkHttp para construir esa petición (Request), añadirle la cabecera de seguridad X-API-Key, y enviarla al servidor.
+
+## Kotlinx Serialization
+Esta es la librería oficial de Kotlin para la serialización, que es el proceso fundamental de convertir objetos de datos de Kotlin (nuestras data class) en un formato de texto como JSON, que es el lenguaje que entienden las APIs. También realiza el proceso inverso (deserialización), convirtiendo el texto JSON que recibimos del servidor de vuelta a objetos que podemos usar fácilmente en nuestro código. Es una herramienta esencial para cualquier aplicación moderna que se comunique con un servicio web.
+
+En nuestro proyecto, la hemos usado intensivamente para definir la estructura de los datos. Por ejemplo, al registrar un usuario, creamos un objeto UserCreate con toda su información. Luego, con una simple llamada a Json.encodeToString(), lo convertimos en un string JSON listo para ser enviado en el cuerpo de la petición de OkHttp. De la misma manera, cuando recibimos los datos del perfil, usamos Json.decodeFromString() para transformar la respuesta del servidor en un objeto UserProfileOut, permitiéndonos acceder a userProfile.name o userProfile.contacts de manera natural y segura.
+
+## Google Play Services - Location
+Esta librería, parte del ecosistema de Google, nos da acceso a una de las funciones más importantes del teléfono: el sensor de ubicación. El FusedLocationProviderClient es su componente principal y es la forma recomendada por Google para obtener la localización del dispositivo. Su gran ventaja es que es muy inteligente y eficiente con la batería, ya que combina las señales de GPS, Wi-Fi y redes móviles para obtener la ubicación más precisa posible en el menor tiempo.
+
+Para nosotros, esta librería es absolutamente crítica para la función principal de la app. En la MainActivity, cuando el usuario presiona el botón para reportar una emergencia, usamos el FusedLocationProviderClient para solicitar la ubicación geográfica exacta del dispositivo en ese preciso instante. La latitud y longitud que nos devuelve son los datos que luego empaquetamos en el PaqueteOnline para que el sistema central sepa exactamente dónde se necesita la ayuda.
+
+## AndroidX Lifecycle (Coroutines Support)
+Esta es una de las librerías clave de Android Jetpack, diseñada para manejar tareas en segundo plano de forma segura y eficiente, especialmente las coroutines de Kotlin. Proporciona el lifecycleScope, un "ámbito" que está directamente atado al ciclo de vida de una pantalla. Esto significa que si iniciamos una operación larga (como una llamada de red) y el usuario cierra la pantalla antes de que termine, el lifecycleScope se encarga de cancelar la operación automáticamente, previniendo errores, consumo innecesario de batería y "memory leaks".
+
+En cada una de nuestras Activities (LoginActivity, RegisterActivity, MainActivity, etc.), hemos usado lifecycleScope.launch para ejecutar todas nuestras llamadas de red. Al hacerlo, nos aseguramos de que la comunicación con la API ocurra en un hilo secundario (Dispatchers.IO), lo que evita que la interfaz de usuario se congele. Gracias a esta librería, nuestra aplicación es fluida, estable y segura.
+
+## Google Material Components
+Esta es la librería de diseño de Google que nos permite implementar fácilmente el lenguaje visual de Material Design. Nos proporciona un conjunto muy completo de componentes de interfaz de usuario (UI) pre-diseñados y listos para usar, como botones, campos de texto con etiquetas flotantes (TextInputLayout), menús desplegables (Spinner), diálogos de alerta (AlertDialog), y mucho más. Su uso garantiza que la aplicación tenga un aspecto moderno, coherente y que siga las guías de diseño de Android.
+
+Hemos usado esta librería para construir prácticamente toda la interfaz visual de la aplicación. Elementos como el campo de contraseña que muestra y oculta el texto, los botones con efectos de "ripple" al presionarlos, y el estilo general de los formularios, provienen de Material Components. Nos ha ahorrado cientos de líneas de código de diseño y nos ha permitido crear una experiencia de usuario limpia y profesional.
