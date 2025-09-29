@@ -5,11 +5,12 @@
     /* Paleta de Colores */
     --bg: #0b0b10;
     --panel: #12121a;
-    --panel-2: #1a1b2d; /* Ligeramente más claro para contraste */
+    --panel-2: #1a1b2d;
     --text: #f4f6fb;
     --muted: #a9b0c0;
     --brand1: #00ff9d; /* Verde menta */
     --brand2: #2d7dff; /* Azul primario */
+    --purple: #9b5cff; /* Morado para unidades ocupadas */
     --red: #ff3b30;
     --orange: #ff9500;
     --green: #30d158;
@@ -17,6 +18,7 @@
     /* Estilos Reutilizables */
     --border-color: #2a2b4a;
     --border-radius: 10px;
+    --highlight-bg: rgba(45, 125, 255, 0.15); /* Color para resaltado suave */
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
     --transition-speed: 0.2s;
@@ -25,13 +27,8 @@
 /* ==========================================================================
    2. ESTILOS BASE Y TIPOGRAFÍA
    ========================================================================== */
-* {
-    box-sizing: border-box;
-}
-
-html {
-    scroll-behavior: smooth;
-}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 
 body {
     margin: 0;
@@ -40,74 +37,13 @@ body {
                 var(--bg);
     color: var(--text);
     font-family: "Inter", system-ui, -apple-system, sans-serif;
-    font-size: 16px;
-    line-height: 1.5;
     overflow: hidden;
-    /* Mejoras de renderizado de fuentes */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
 /* ==========================================================================
-   3. COMPONENTES REUTILIZABLES (BOTONES, BADGES)
-   ========================================================================== */
-.btn {
-    font-size: 14px;
-    font-weight: 500;
-    padding: 8px 16px;
-    border-radius: 6px;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all var(--transition-speed) ease-in-out;
-    border: 1px solid var(--border-color);
-    background-color: var(--panel-2);
-    color: var(--text);
-}
-
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-    filter: brightness(1.1);
-}
-
-/* Mejora de accesibilidad para navegación con teclado */
-.btn:focus-visible {
-    outline: 2px solid var(--brand2);
-    outline-offset: 2px;
-}
-
-.btn.primary { background-color: var(--brand2); border-color: var(--brand2); color: white; }
-.btn.success { background-color: var(--green); border-color: var(--green); color: #0b0b10; }
-.btn.danger { background-color: var(--red); border-color: var(--red); color: white; }
-
-.badge {
-    font-size: 0.8em;
-    padding: 4px 10px;
-    border-radius: 12px; /* Más redondeado */
-    color: white;
-    text-transform: capitalize;
-    font-weight: 700;
-}
-
-.badge.accidente { background-color: var(--red); }
-.badge.en-camino { background-color: var(--orange); color: #111; }
-.badge.atendido { background-color: var(--green); color: #111;}
-.badge.green { background-color: var(--green); }
-.badge.red { background-color: var(--red); }
-
-.unit-tag {
-    background-color: var(--brand2);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.8em;
-    font-weight: 500;
-    display: inline-block;
-    margin: 2px;
-}
-
-/* ==========================================================================
-   4. LAYOUT Y PANELES PRINCIPALES
+   3. LAYOUT Y PANELES PRINCIPALES
    ========================================================================== */
 .app-header {
     height: 80px;
@@ -119,20 +55,9 @@ body {
     border-bottom: 1px solid var(--border-color);
 }
 
-.brand h1 {
-    margin: 0;
-    font-size: 1.4em;
-    font-weight: 500;
-}
-
-.logo-dot {
-    width: 12px;
-    height: 12px;
-    background-color: var(--brand1);
-    border-radius: 50%;
-    box-shadow: 0 0 10px var(--brand1);
-    margin-right: 12px;
-}
+.brand { display: flex; align-items: center; }
+.brand h1 { margin: 0; font-size: 1.4em; font-weight: 500; }
+.logo-dot { width: 12px; height: 12px; background-color: var(--brand1); border-radius: 50%; box-shadow: 0 0 10px var(--brand1); margin-right: 12px; }
 
 .layout {
     display: grid;
@@ -159,244 +84,121 @@ body {
 }
 
 /* ==========================================================================
-   5. TABLA DE DATOS
+   4. COMPONENTES REUTILIZABLES (BOTONES, INPUTS, ETC.)
    ========================================================================== */
-.panel-header {
-    margin-bottom: 20px;
-}
-
-.panel-header h2 {
-    margin: 0;
+.btn {
+    font-size: 14px;
     font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all var(--transition-speed) ease-in-out;
+    border: 1px solid var(--border-color);
+    background-color: var(--panel-2);
+    color: var(--text);
 }
+.btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); filter: brightness(1.1); }
+.btn:focus-visible { outline: 2px solid var(--brand2); outline-offset: 2px; }
+.btn.primary { background-color: var(--brand2); border-color: var(--brand2); color: white; }
+.btn.success { background-color: var(--green); border-color: var(--green); color: #0b0b10; }
+.btn.danger { background-color: var(--red); border-color: var(--red); color: white; }
+.btn-close { position: absolute; top: 15px; right: 15px; background: none; border: none; color: var(--muted); font-size: 1.2em; cursor: pointer; }
 
-.table-wrap {
-    flex-grow: 1;
-    overflow-y: auto;
-}
+.badge { font-size: 0.8em; padding: 4px 10px; border-radius: 12px; color: white; text-transform: capitalize; font-weight: 700; }
+.badge.accidente { background-color: var(--red); }
+.badge.en-camino { background-color: var(--orange); color: #111; }
+.badge.atendido { background-color: var(--green); color: #111;}
 
-/* Scrollbar moderno */
+.unit-tag { background-color: var(--brand2); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: 500; display: inline-block; margin: 2px; }
+
+.field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+.field label { font-size: 0.9em; color: var(--muted); }
+.field input, .field select { padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); background-color: var(--bg); color: var(--text); font-size: 1em; }
+.field input:focus, .field select:focus { outline: none; border-color: var(--brand2); box-shadow: 0 0 0 3px rgba(45, 125, 255, 0.3); }
+
+/* ==========================================================================
+   5. COMPONENTES ESPECÍFICOS
+   ========================================================================== */
+/* --- Cabecera: Contadores y Búsqueda --- */
+.dashboard-stats { display: flex; gap: 30px; position: absolute; left: 50%; transform: translateX(-50%); }
+.stat-item { display: flex; align-items: center; gap: 10px; }
+.stat-number { font-size: 2em; font-weight: 700; line-height: 1; }
+.stat-label { font-size: 0.9em; color: var(--muted); line-height: 1.2; }
+
+.panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.panel-header h2 { margin: 0; font-weight: 500; }
+
+.search-wrapper { position: relative; }
+#search-input { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background-color: var(--bg); color: var(--text); width: 250px; transition: all var(--transition-speed); }
+#search-input:focus { outline: none; border-color: var(--brand2); width: 300px; }
+
+/* --- Tabla --- */
+.table-wrap { flex-grow: 1; overflow-y: auto; }
 .table-wrap::-webkit-scrollbar { width: 8px; }
 .table-wrap::-webkit-scrollbar-track { background: transparent; }
 .table-wrap::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 4px; }
 .table-wrap::-webkit-scrollbar-thumb:hover { background-color: var(--muted); }
 
-.grid {
-    width: 100%;
-    border-collapse: collapse;
+.grid { width: 100%; border-collapse: collapse; }
+.grid th, .grid td { padding: 16px 15px; text-align: left; border-bottom: 1px solid var(--border-color); }
+.grid th { background-color: var(--bg); font-weight: 500; text-transform: uppercase; font-size: 0.8em; color: var(--muted); position: sticky; top: 0; z-index: 10; }
+.grid tbody tr:nth-child(even) { background-color: rgba(42, 43, 74, 0.2); }
+.grid .actions .btn { font-size: 0.8em; padding: 6px 10px; }
+
+.user-link { cursor: pointer; text-decoration: none; color: var(--brand1); font-weight: 500; transition: color var(--transition-speed); }
+.user-link:hover { color: white; text-decoration: underline; }
+
+/* --- Diálogos (Modales) --- */
+dialog { padding: 0; border: 1px solid var(--border-color); background-color: var(--panel); border-radius: var(--border-radius); box-shadow: var(--shadow-md); }
+dialog::backdrop { background-color: rgba(11, 11, 16, 0.6); backdrop-filter: blur(5px); }
+#emergency-details-dialog::backdrop { background-color: transparent; backdrop-filter: none; }
+
+.dialog-card { padding: 24px; min-width: 400px; color: var(--text); }
+.dialog-card h3 { margin: 0 0 20px 0; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; font-weight: 500; }
+.dialog-card li b { color: white; } /* Regla general para negritas en diálogos */
+.dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+
+.details-list { list-style: none; padding: 0; margin: 15px 0; }
+.details-list li { padding: 8px 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; color: var(--text); }
+.details-list li:last-child { border-bottom: none; }
+.details-list li b { color: var(--muted); margin-right: 15px; } /* Regla específica para etiquetas de detalle */
+
+/* --- Marcadores de Mapa --- */
+.marker-dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.9); box-shadow: var(--shadow-sm); }
+.marker-red { background-color: var(--red); }
+.marker-orange { background-color: var(--orange); }
+.marker-blue { background-color: var(--brand2); }
+.marker-purple { background-color: var(--purple); }
+
+.leaflet-control-center a {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23f4f6fb"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v4h4v2h-4v4h-2v-4H7v-2h4V7z"/></svg>');
+    background-size: 20px 20px; background-repeat: no-repeat; background-position: center; width: 34px; height: 34px; border-radius: 4px; background-color: var(--panel); border: 1px solid var(--border-color);
 }
+.leaflet-control-center a:hover { background-color: var(--panel-2); }
 
-.grid th, .grid td {
-    padding: 16px 15px; /* Más espacio vertical */
-    text-align: left;
-    border-bottom: 1px solid var(--border-color);
-}
 
-.grid th {
-    background-color: var(--bg); /* Fondo más oscuro para el encabezado */
-    font-weight: 500;
-    text-transform: uppercase;
-    font-size: 0.8em;
-    color: var(--muted);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-}
-
-/* Efecto "cebra" para mejorar legibilidad */
-.grid tbody tr:nth-child(even) {
-    background-color: rgba(42, 43, 74, 0.2);
-}
-
-.grid .actions .btn {
-    font-size: 0.8em;
-    padding: 6px 10px;
-}
-
-.user-link {
-    cursor: pointer;
-    text-decoration: none;
-    color: var(--brand1);
-    font-weight: 500;
-    transition: color var(--transition-speed);
-}
-
-.user-link:hover {
-    color: white;
-    text-decoration: underline;
-}
-
-/* --- RESALTADO DE ALTO IMPACTO (TABLA Y MAPA) --- */
-
-/* 1. Estilo para la fila de la tabla */
+/* ==========================================================================
+   6. ANIMACIONES Y EFECTOS DE INTERACCIÓN
+   ========================================================================== */
 tr.highlighted {
-    background-color: #fff3cd;
-    color: #333;
+    background-color: var(--highlight-bg) !important; /* Usamos variable del tema */
     transform: scale(1.02);
     transition: transform 0.2s ease-out, background-color 0.2s ease-out;
     box-shadow: var(--shadow-md);
     cursor: pointer;
-    /* Se necesita para que el color de texto se aplique a las celdas */
-    & > td { color: inherit; } 
+}
+tr.highlighted > td { color: var(--text); } /* Corregido para que no herede el color negro */
+
+tr.row-focused { animation: flash-focus 1.5s ease-out; }
+@keyframes flash-focus {
+    0% { background-color: rgba(45, 125, 255, 0.6); }
+    100% { background-color: transparent; }
 }
 
-/* 2. Animación de pulso para el marcador */
 @keyframes pulse {
     0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(45, 125, 255, 0.7); }
     70% { transform: scale(1.5); box-shadow: 0 0 0 10px rgba(45, 125, 255, 0); }
     100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(45, 125, 255, 0); }
 }
-
-/* 3. Aplicación de la animación al marcador resaltado */
-.highlighted-marker .marker-dot {
-    animation: pulse 1.5s infinite;
-    border-color: var(--brand2);
-}
-
-
-/* ==========================================================================
-   6. DIÁLOGOS (MODALES)
-   ========================================================================== */
-dialog {
-    padding: 0;
-    border: 1px solid var(--border-color);
-    background-color: var(--panel);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-md);
-}
-
-dialog::backdrop {
-    background-color: rgba(124, 100, 100, 0.6);
-    backdrop-filter: blur(5px);
-}
-
-.dialog-card {
-    padding: 24px;
-    min-width: 400px;
-}
-.dialog-card h3 {
-    margin: 0 0 20px 0;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 15px;
-    font-weight: 500;
-}
-
-.dialog-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 24px;
-}
-
-.field {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 20px;
-}
-.field label { font-size: 0.9em; color: var(--muted); }
-.field input, .field select {
-    padding: 12px;
-    border-radius: 6px;
-    border: 1px solid var(--border-color);
-    background-color: var(--bg);
-    color: var(--text);
-    font-size: 1em;
-}
-.field input:focus, .field select:focus {
-    outline: none;
-    border-color: var(--brand2);
-    box-shadow: 0 0 0 3px rgba(45, 125, 255, 0.3);
-}
-
-/* ==========================================================================
-   7. MARCADORES DE MAPA
-   ========================================================================== */
-.marker-dot {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.9);
-    box-shadow: var(--shadow-sm);
-}
-
-.marker-red { background-color: var(--red); }
-.marker-orange { background-color: var(--orange); }
-.marker-blue { background-color: var(--brand2); }
-
-/* ==========================================================================
-   8. CORRECCIONES Y AJUSTES FINALES
-   ========================================================================== */
-
-/* --- Corrección de Contraste para Pop-up de Detalles de Usuario --- */
-
-/* Establece un color de texto base casi blanco para todo el contenido del pop-up */
-#/* --- Estilo de Texto General para Todos los Pop-ups --- */
-
-/*
-  Asegura que todo el texto dentro de cualquier .dialog-card
-  tenga el color correcto para un buen contraste.
-*/
-.dialog-card {
-    color: var(--text); /* Establece el color base casi blanco */
-}
-
-.dialog-card h3,
-.dialog-card h4,
-.dialog-card li {
-    color: inherit; /* Heredan el color del padre */
-}
-
-.dialog-card li b {
-    color: #ffffff; /* Blanco puro para textos en negrita */
-}
-
-/* Estilos para los contadores en la cabecera */
-.dashboard-stats {
-    display: flex;
-    gap: 30px;
-    position: absolute; /* Lo posicionamos en el centro */
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.stat-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.stat-number {
-    font-size: 2em; /* Número grande y visible */
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1;
-}
-
-.stat-label {
-    font-size: 0.9em;
-    color: var(--muted);
-    line-height: 1.2;
-}
-
-/* --- Anulación de Fondo para el Pop-up de Detalles de Emergencia --- */
-
-/*
-  Hacemos que el fondo (backdrop) del pop-up de detalles sea completamente
-  transparente y sin filtro de desenfoque, para poder ver el mapa.
-*/
-#emergency-details-dialog::backdrop {
-    background-color: transparent;
-    backdrop-filter: none;
-}
-
-
-
-/* --- Corrección de Contraste para los Valores de la Lista de Detalles de Emergencia --- */
-.details-list li {
-    color: var(--text); /* Asegura que el texto general del li sea claro */
-}
-
-.details-list li b {
-    color: var(--muted); /* Mantiene la etiqueta en un tono ligeramente más tenue para distinguirla */
-}
+.highlighted-marker .marker-dot { animation: pulse 1.5s infinite; border-color: var(--brand2); }

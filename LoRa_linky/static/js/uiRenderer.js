@@ -1,18 +1,10 @@
 // js/uiRenderer.js
 
-/**
- * Traduce un ID de estado a un texto legible.
- */
 function traducirStatus(statusId) {
     const statuses = { 1: 'accidente', 2: 'en_camino', 3: 'atendido' };
     return statuses[statusId] || 'desconocido';
 }
 
-/**
- * Dibuja las filas de la tabla de alertas.
- * @param {HTMLElement} tableBody - El elemento <tbody> de la tabla.
- * @param {Array} alerts - El array de alertas para mostrar.
- */
 export function renderTable(tableBody, alerts) {
     tableBody.innerHTML = '';
     
@@ -38,7 +30,7 @@ export function renderTable(tableBody, alerts) {
             <td><span class="badge ${statusText.replace('_', '-')}">${statusText}</span></td>
             <td>${assignedUnit ? `<span class="unit-tag">${assignedUnit.name}</span>` : '<span class="muted">N/A</span>'}</td>
             <td>${userId ? `<a class="user-link" data-user-id="${userId}">${userName}</a>` : `<span class="muted">${userName}</span>`}</td>
-            <td>${new Date(alert.timestamp).toLocaleString('es-SV')}</td>
+            <td class="muted">${new Date(alert.timestamp).toLocaleString('es-SV')}</td>
             <td class="actions">
                 <button class="btn btn-details" data-id="${alert.emergency_id}">Ver</button>
                 <button class="btn btn-primary btn-asignar" data-id="${alert.emergency_id}">Asignar</button>
@@ -49,9 +41,6 @@ export function renderTable(tableBody, alerts) {
     });
 }
 
-/**
- * Dibuja los detalles de un usuario en su pop-up.
- */
 export function renderUserDetails(contentElement, user, kinCatalog) {
     const conditionsHtml = user.conditions?.length ? user.conditions.map(c => `<li>${c.description}</li>`).join('') : '<li>Ninguna registrada</li>';
     const contactsHtml = user.emergency_contacts?.length ? user.emergency_contacts.map(c => {
@@ -74,9 +63,6 @@ export function renderUserDetails(contentElement, user, kinCatalog) {
     document.getElementById('close-user-dialog-btn').onclick = () => contentElement.parentElement.close();
 }
 
-/**
- * Dibuja los detalles de una emergencia en su pop-up.
- */
 export function renderEmergencyDetails(contentElement, details) {
     const statusText = traducirStatus(details.status);
     const typeText = details.accident_type?.description || 'N/A';

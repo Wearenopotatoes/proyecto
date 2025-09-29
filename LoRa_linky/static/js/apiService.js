@@ -1,7 +1,7 @@
 // js/apiService.js
 
 // --- Configuración de la API ---
-const API_BASE_URL = 'https://loralink.live';
+const API_BASE_URL = 'https://api.loralink.live';
 const API_KEY = 'linkONxM0Jn';
 
 /**

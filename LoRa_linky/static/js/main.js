@@ -1,14 +1,13 @@
 // js/main.js
 
-// --- Importaciones de los Módulos ---
 import { apiFetch } from './apiService.js';
 import { initializeMap, drawMarkers, flyToLocation, alertMarkers } from './mapManager.js';
 import { renderTable, renderUserDetails, renderEmergencyDetails } from './uiRenderer.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- Referencias a Elementos del DOM ---
     const tableBody = document.getElementById('alerts-table-body');
+    const searchInput = document.getElementById('search-input');
     const assignDialog = document.getElementById('assign-unit-dialog');
     const userDialog = document.getElementById('user-details-dialog');
     const userDialogContent = document.getElementById('user-details-content');
@@ -19,16 +18,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCancelAssign = document.getElementById('btn-cancel-assign');
     const btnClearAlerts = document.getElementById('clear-alerts-btn');
 
-    // --- Estado de la Aplicación ---
     let selectedAlertId = null;
     let kinCatalog = [];
     let currentAlerts = [];
     let currentUnits = [];
-    const map = initializeMap(); // Inicializamos el mapa y guardamos la instancia
+    const map = initializeMap();
 
-    /**
-     * Función principal que obtiene todos los datos y coordina el renderizado.
-     */
     async function fetchAndRender() {
         try {
             const [alerts, baseUnits, kins] = await Promise.all([
@@ -53,18 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }));
             }
             
-            // Renderiza la tabla y los marcadores
-            renderTable(tableBody, currentAlerts);
-            drawMarkers(map, currentAlerts, currentUnits);
-            assignEvents();
-
-                    // Calculamos los totales
-            const activeAlertsCount = currentAlerts.filter(a => a.status !== 3).length;
-            const availableUnitsCount = currentUnits.filter(u => u.active_emergencies === 0).length;
-
-                   // Actualizamos el HTML
-            document.getElementById('active-alerts-count').textContent = activeAlertsCount;
-            document.getElementById('available-units-count').textContent = availableUnitsCount;
+            updateUI();
 
         } catch (error) {
             console.error("Error fatal al cargar el dashboard:", error);
@@ -72,11 +56,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    /**
-     * Asigna todos los eventos a los elementos de la interfaz.
-     */
+    function updateUI() {
+        const searchTerm = searchInput.value.toLowerCase();
+        
+        const filteredAlerts = currentAlerts.filter(alert => {
+            const userName = alert.user?.name?.toLowerCase() || '';
+            const accidentType = alert.accident_type?.description?.toLowerCase() || '';
+            return userName.includes(searchTerm) || accidentType.includes(searchTerm);
+        });
+
+        renderTable(tableBody, filteredAlerts);
+        drawMarkers(map, filteredAlerts, currentUnits, handleMarkerClick);
+        updateCounters();
+        assignEvents();
+    }
+    
+    function updateCounters() {
+        const activeAlertsCount = currentAlerts.filter(a => a.status !== 3).length;
+        const availableUnitsCount = currentUnits.filter(u => u.active_emergencies === 0).length;
+        document.getElementById('active-alerts-count').textContent = activeAlertsCount;
+        document.getElementById('available-units-count').textContent = availableUnitsCount;
+    }
+
     function assignEvents() {
-        // --- Interacción Mapa-Tabla ---
         document.querySelectorAll('#alerts-table-body tr').forEach(row => {
             const emergencyId = row.id.replace('row-', '');
             const marker = alertMarkers[emergencyId];
@@ -86,7 +88,8 @@ document.addEventListener('DOMContentLoaded', () => {
             row.onmouseleave = () => { marker.getElement()?.classList.remove('highlighted-marker'); };
         });
 
-        // --- Clics en los botones de la tabla ---
+        searchInput.oninput = updateUI;
+        
         tableBody.onclick = (e) => {
             const target = e.target.closest('button, a');
             if (!target) return;
@@ -99,8 +102,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (target.matches('.user-link')) handleUserClick(id);
         };
     }
-
-    // --- Manejadores de Clics (Handlers) ---
+    
+    function handleMarkerClick(emergencyId) {
+        const row = document.getElementById(`row-${emergencyId}`);
+        if (row) {
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            row.classList.add('row-focused');
+            setTimeout(() => row.classList.remove('row-focused'), 1500);
+        }
+    }
 
     async function handleDetailsClick(id) {
         emergencyDialogContent.innerHTML = '<h3>Cargando detalles...</h3>';
@@ -150,8 +160,6 @@ document.addEventListener('DOMContentLoaded', () => {
             userDialogContent.innerHTML = '<h3>Error al cargar datos del usuario.</h3>';
         }
     }
-
-    // --- Eventos de Botones Globales y de Diálogos ---
     
     btnCancelAssign.onclick = () => assignDialog.close();
 
@@ -187,7 +195,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- Arranque y Ciclo de Actualización ---
     fetchAndRender();
     setInterval(fetchAndRender, 5000);
 });

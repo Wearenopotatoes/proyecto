@@ -7,10 +7,10 @@ def dashboard():
     """Sirve la página principal del dashboard de emergencias."""
     return render_template("index.html")
 
-# --- NUEVA RUTA PARA LA GESTIÓN DE UNIDADES ---
+# --- RUTA PARA LA GESTIÓN DE UNIDADES ---
 @app.route('/units')
 def units_management():
-    """Sirve la nueva página para gestionar las unidades."""
+    """Sirve la página para gestionar las unidades."""
     return render_template("units.html")
 
 if __name__ == "__main__":
