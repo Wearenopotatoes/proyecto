@@ -1,0 +1,186 @@
+/* ==========================================================================
+   TABLAS Y LISTAS
+   ========================================================================== */
+
+/* === TABLA GRID === */
+.grid { 
+    width: 100%; 
+    border-collapse: collapse;
+}
+
+.grid th, 
+.grid td { 
+    padding: 16px 12px; 
+    text-align: left; 
+    border-bottom: 1px solid var(--border-color);
+}
+
+.grid th { 
+    background-color: var(--bg); 
+    font-weight: 600; 
+    text-transform: uppercase; 
+    font-size: 0.75em; 
+    color: var(--muted); 
+    position: sticky; 
+    top: 0; 
+    z-index: var(--z-sticky);
+    letter-spacing: 0.05em;
+}
+
+.grid tbody tr {
+    transition: var(--transition-speed);
+}
+
+.grid tbody tr:nth-child(even) { 
+    background-color: rgba(42, 43, 74, 0.2); 
+}
+
+.grid tbody tr:hover {
+    background-color: var(--highlight-bg);
+    transform: scale(1.01);
+}
+
+.grid tbody tr.highlighted {
+    background-color: var(--highlight-bg) !important;
+    transform: scale(1.01);
+    box-shadow: var(--shadow-md);
+    cursor: pointer;
+}
+
+.grid tbody tr.row-focused { 
+    animation: flash-focus 1.5s ease-out; 
+}
+
+@keyframes flash-focus {
+    0% { background-color: rgba(45, 125, 255, 0.6); }
+    100% { background-color: transparent; }
+}
+
+/* === ACCIONES EN TABLA === */
+.grid .actions { 
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.grid .actions .btn { 
+    font-size: 0.8em; 
+    padding: 6px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* === CELDAS ESPECIALES === */
+.accident-type-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.time-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.elapsed-time {
+    color: var(--orange);
+    font-weight: 500;
+}
+
+/* === LISTAS DE DETALLES === */
+.details-list { 
+    list-style: none; 
+    padding: 0; 
+    margin: 0;
+}
+
+.details-list li { 
+    padding: 12px; 
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text);
+    transition: var(--transition-speed);
+}
+
+.details-list li:last-child { 
+    border-bottom: none; 
+}
+
+.details-list li:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.condition-item, 
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.contact-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.contact-details {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-top: 5px;
+    padding-left: 30px;
+}
+
+.contact-relation {
+    background: rgba(155, 92, 255, 0.2);
+    color: var(--purple);
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: 500;
+}
+
+/* === TABLAS DE UNIDADES === */
+.unit-row {
+    cursor: default;
+    transition: var(--transition-smooth);
+}
+
+.unit-row.occupied {
+    cursor: pointer;
+}
+
+.unit-row.occupied:hover {
+    background-color: var(--highlight-bg);
+}
+
+.unit-row.expanded {
+    background-color: rgba(45, 125, 255, 0.1);
+}
+
+.details-row {
+    display: none;
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.details-row td {
+    padding: 15px 20px;
+}
+
+.details-cell {
+    font-size: 0.9em;
+    color: var(--muted);
+}
+
+.expand-icon {
+    display: inline-block;
+    transition: transform 0.3s ease;
+    font-size: 0.8em;
+    color: var(--brand2);
+}
+
+.unit-row.expanded .expand-icon {
+    transform: rotate(90deg);
+}

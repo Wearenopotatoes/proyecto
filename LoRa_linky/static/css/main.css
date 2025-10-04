@@ -1,0 +1,23 @@
+/* ==========================================================================
+   LORALINK - MAIN CSS
+   Archivo principal que importa todos los módulos
+   ========================================================================== */
+
+/* Importar módulos en orden de dependencia */
+@import url('01-variables.css');
+@import url('02-reset.css');
+@import url('03-layout.css');
+@import url('04-header.css');
+@import url('05-components.css');
+@import url('06-table.css');
+@import url('07-forms.css');
+@import url('08-dialogs.css');
+@import url('09-map.css');
+@import url('10-animations.css');
+@import url('11-utilities.css');
+@import url('12-responsive.css');
+
+/* 
+  NOTA: Este archivo actúa como punto de entrada único.
+  No agregues estilos aquí, usa los módulos correspondientes.
+*/

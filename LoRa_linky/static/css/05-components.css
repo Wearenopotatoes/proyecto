@@ -1,0 +1,256 @@
+/* ==========================================================================
+   COMPONENTES REUTILIZABLES
+   ========================================================================== */
+
+/* === BOTONES === */
+.btn {
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 18px;
+    border-radius: var(--border-radius-sm);
+    text-decoration: none;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    border: 1px solid var(--border-color);
+    background-color: var(--panel-2);
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.btn:hover:not(:disabled) { 
+    transform: translateY(-2px); 
+    box-shadow: var(--shadow-md); 
+    filter: brightness(1.15);
+}
+
+.btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Variantes de botones */
+.btn.primary { 
+    background: linear-gradient(135deg, var(--brand2), #1a5fd4);
+    border-color: var(--brand2); 
+    color: white;
+    font-weight: 600;
+}
+
+.btn.btn-secondary {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: var(--border-color);
+}
+
+.btn.success, 
+.btn.btn-success { 
+    background-color: var(--green); 
+    border-color: var(--green); 
+    color: #0b0b10;
+    font-weight: 600;
+}
+
+.btn.danger, 
+.btn.btn-danger { 
+    background-color: var(--red); 
+    border-color: var(--red); 
+    color: white;
+    font-weight: 600;
+}
+
+.btn.btn-info {
+    background-color: var(--blue);
+    border-color: var(--blue);
+    color: white;
+}
+
+.btn.btn-details {
+    background-color: rgba(45, 125, 255, 0.1);
+    border-color: var(--brand2);
+    color: var(--brand2);
+}
+
+/* === BOTÓN DE CERRAR === */
+.btn-close { 
+    position: absolute; 
+    top: 15px; 
+    right: 15px; 
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border-color);
+    color: var(--muted); 
+    font-size: 1.5em; 
+    cursor: pointer;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-smooth);
+    line-height: 1;
+}
+
+.btn-close:hover {
+    background: var(--red);
+    color: white;
+    transform: rotate(90deg);
+}
+
+/* === BADGES === */
+.badge { 
+    font-size: 0.75em; 
+    padding: 5px 12px; 
+    border-radius: 12px; 
+    color: white; 
+    text-transform: capitalize; 
+    font-weight: 700;
+    display: inline-block;
+    letter-spacing: 0.03em;
+}
+
+.badge.accidente { 
+    background-color: var(--red);
+    box-shadow: 0 0 10px rgba(255, 59, 48, 0.3);
+}
+
+.badge.en-camino,
+.badge.en_camino { 
+    background-color: var(--orange); 
+    color: #111;
+    box-shadow: 0 0 10px rgba(255, 149, 0, 0.3);
+}
+
+.badge.atendido { 
+    background-color: var(--green); 
+    color: #111;
+    box-shadow: 0 0 10px rgba(48, 209, 88, 0.3);
+}
+
+.badge.green { 
+    background-color: var(--green); 
+    color: #111;
+}
+
+.badge.red { 
+    background-color: var(--red); 
+}
+
+/* === TAGS === */
+.unit-tag { 
+    background: linear-gradient(135deg, var(--brand2), var(--purple));
+    color: white; 
+    padding: 4px 10px; 
+    border-radius: 6px; 
+    font-size: 0.8em; 
+    font-weight: 600;
+    display: inline-block;
+    box-shadow: 0 2px 8px rgba(45, 125, 255, 0.3);
+}
+
+/* === CARDS === */
+.info-card,
+.detail-item {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 15px;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-color);
+}
+
+.info-label,
+.detail-label {
+    font-size: 0.8em;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.info-value,
+.detail-value {
+    font-size: 1em;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.detail-value code {
+    background: rgba(0, 255, 157, 0.1);
+    color: var(--brand1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.95em;
+}
+
+/* === AVATAR === */
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--brand2), var(--brand1));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5em;
+    flex-shrink: 0;
+}
+
+/* === ICONOS === */
+.section-icon {
+    font-size: 1.2em;
+}
+
+.type-icon {
+    font-size: 1.3em;
+}
+
+.condition-icon, 
+.contact-icon {
+    font-size: 1.3em;
+    flex-shrink: 0;
+}
+
+/* === SECCIONES === */
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1em;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: var(--text);
+}
+
+/* === ESTADOS === */
+.empty-state {
+    color: var(--muted);
+    font-style: italic;
+    text-align: center;
+    padding: 20px !important;
+}
+
+.muted { 
+    color: var(--muted);
+    font-style: italic;
+}
+
+/* === LOADING SPINNER === */
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    margin: 20px auto;
+    border: 3px solid rgba(45, 125, 255, 0.2);
+    border-top-color: var(--brand2);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

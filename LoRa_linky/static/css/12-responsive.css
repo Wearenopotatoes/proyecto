@@ -1,0 +1,387 @@
+/* ==========================================================================
+   RESPONSIVE DESIGN - MEDIA QUERIES
+   ========================================================================== */
+
+/* === BREAKPOINTS === 
+   - Mobile: < 768px
+   - Tablet: 768px - 1024px
+   - Desktop: 1024px - 1400px
+   - Large: > 1400px
+*/
+
+/* === LARGE DESKTOP (< 1400px) === */
+@media (max-width: 1400px) {
+    .layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: 400px 1fr;
+    }
+    
+    .dashboard-stats {
+        gap: 15px;
+    }
+    
+    .stat-item {
+        padding: 6px 12px;
+    }
+    
+    .stat-number {
+        font-size: 1.5em;
+    }
+}
+
+/* === TABLET (< 1024px) === */
+@media (max-width: 1024px) {
+    /* Header */
+    .app-header {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 15px 20px;
+    }
+    
+    .live-clock-container {
+        order: -1;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .dashboard-stats {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    /* Filtros */
+    .filter-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .search-input,
+    .filter-select {
+        width: 100% !important;
+    }
+    
+    /* Diálogos */
+    .dialog-card {
+        min-width: 90vw;
+        max-width: 90vw;
+    }
+    
+    .dialog-card.dialog-large {
+        min-width: 90vw;
+    }
+    
+    /* Tabla */
+    .grid .actions {
+        flex-direction: column;
+    }
+    
+    .grid .actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Grids */
+    .user-info-grid,
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* === MOBILE (< 768px) === */
+@media (max-width: 768px) {
+    /* Layout */
+    .layout {
+        padding: 15px;
+        gap: 15px;
+        grid-template-rows: 300px 1fr;
+    }
+    
+    .map-panel,
+    .table-panel,
+    .form-panel {
+        padding: 15px;
+    }
+    
+    /* Panel Header */
+    .panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .panel-header h2 {
+        font-size: 1.1em;
+    }
+    
+    /* Leyenda del Mapa */
+    .map-legend {
+        width: 100%;
+        justify-content: space-between;
+        font-size: 0.75em;
+    }
+    
+    /* Tabla */
+    .grid th,
+    .grid td {
+        padding: 10px 8px;
+        font-size: 0.85em;
+    }
+    
+    .grid th {
+        font-size: 0.7em;
+    }
+    
+    /* Header Actions */
+    .header-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .header-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Estadísticas */
+    .stat-item {
+        min-width: 100px;
+    }
+    
+    .stat-number {
+        font-size: 1.3em;
+    }
+    
+    .stat-label {
+        font-size: 0.75em;
+    }
+    
+    /* Diálogos */
+    .dialog-card {
+        padding: 20px;
+        min-width: 85vw;
+    }
+    
+    .dialog-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .dialog-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .dialog-actions .btn {
+        width: 100%;
+    }
+    
+    /* Formularios */
+    .field input,
+    .field select {
+        font-size: 16px; /* Prevenir zoom en iOS */
+    }
+    
+    /* Botones */
+    .btn {
+        padding: 10px 14px;
+        font-size: 0.9em;
+    }
+}
+
+/* === SMALL MOBILE (< 480px) === */
+@media (max-width: 480px) {
+    /* Layout más compacto */
+    .layout {
+        padding: 10px;
+        gap: 10px;
+        grid-template-rows: 250px 1fr;
+    }
+    
+    .map-panel,
+    .table-panel,
+    .form-panel {
+        padding: 12px;
+    }
+    
+    /* Header más pequeño */
+    .app-header {
+        padding: 12px 15px;
+    }
+    
+    .brand h1 {
+        font-size: 1.1em;
+    }
+    
+    /* Reloj más compacto */
+    .live-clock {
+        font-size: 1.4em;
+    }
+    
+    .live-date,
+    .timezone-label {
+        font-size: 0.75em;
+    }
+    
+    /* Estadísticas apiladas */
+    .dashboard-stats {
+        gap: 8px;
+    }
+    
+    .stat-item {
+        padding: 6px 10px;
+    }
+    
+    /* Tabla ultra-compacta */
+    .grid th,
+    .grid td {
+        padding: 8px 6px;
+        font-size: 0.8em;
+    }
+    
+    /* Ocultar columnas no esenciales */
+    .grid th:nth-child(3),
+    .grid td:nth-child(3) {
+        display: none; /* Ocultar columna de unidad */
+    }
+    
+    /* Mapa más pequeño */
+    #map {
+        min-height: 200px;
+    }
+    
+    /* Badges más pequeños */
+    .badge {
+        font-size: 0.7em;
+        padding: 4px 8px;
+    }
+    
+    /* Diálogo pantalla completa */
+    .dialog-card {
+        min-width: 95vw;
+        padding: 15px;
+    }
+    
+    .dialog-card h3 {
+        font-size: 1.2em;
+    }
+}
+
+/* === LANDSCAPE MOBILE === */
+@media (max-width: 768px) and (orientation: landscape) {
+    .layout {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr;
+        height: calc(100vh - 70px);
+    }
+    
+    .app-header {
+        height: 70px;
+    }
+    
+    .live-clock-container {
+        display: none; /* Ocultar reloj en landscape mobile */
+    }
+}
+
+/* === PRINT STYLES === */
+@media print {
+    /* Ocultar elementos innecesarios */
+    .app-header,
+    .btn,
+    .filter-group,
+    .map-panel,
+    .header-actions,
+    .btn-close,
+    .dialog-actions {
+        display: none !important;
+    }
+    
+    /* Layout para impresión */
+    .layout {
+        display: block;
+        height: auto;
+        padding: 0;
+    }
+    
+    .table-panel {
+        box-shadow: none;
+        border: 1px solid #000;
+        page-break-inside: avoid;
+    }
+    
+    /* Tabla legible */
+    .grid tbody tr {
+        page-break-inside: avoid;
+    }
+    
+    .grid th,
+    .grid td {
+        padding: 8px;
+        font-size: 10pt;
+    }
+    
+    /* Colores para impresión */
+    .badge {
+        border: 1px solid #000;
+        background: white !important;
+        color: #000 !important;
+    }
+}
+
+/* === MODO OSCURO PREFERIDO === */
+@media (prefers-color-scheme: dark) {
+    /* Ya estamos en modo oscuro por defecto */
+}
+
+/* === ALTO CONTRASTE === */
+@media (prefers-contrast: high) {
+    :root {
+        --border-color: #ffffff;
+        --text: #ffffff;
+        --muted: #cccccc;
+    }
+    
+    .btn {
+        border-width: 2px;
+    }
+}
+
+/* === REDUCIR MOVIMIENTO === */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* === DISPLAY UTILITIES RESPONSIVOS === */
+@media (max-width: 768px) {
+    .hidden-mobile { display: none !important; }
+    .visible-mobile { display: block !important; }
+}
+
+@media (min-width: 769px) {
+    .hidden-desktop { display: none !important; }
+    .visible-desktop { display: block !important; }
+}
+
+/* === TOUCH DEVICES === */
+@media (hover: none) and (pointer: coarse) {
+    /* Aumentar área de toque */
+    .btn,
+    a,
+    button {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Eliminar hover effects en touch */
+    .btn:hover,
+    .grid tbody tr:hover {
+        transform: none;
+    }
+}

@@ -1,0 +1,72 @@
+/* ==========================================================================
+   LAYOUT Y ESTRUCTURA
+   ========================================================================== */
+
+/* === LAYOUT PRINCIPAL === */
+.layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    height: calc(100vh - 80px);
+    overflow: hidden;
+}
+
+/* === PANELES === */
+.map-panel, 
+.table-panel,
+.form-panel {
+    background-color: var(--panel);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+/* === PANEL HEADER === */
+.panel-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.panel-header h2 { 
+    margin: 0; 
+    font-weight: 600;
+    font-size: 1.3em;
+}
+
+/* === TABLE WRAP === */
+.table-wrap { 
+    flex-grow: 1; 
+    overflow-y: auto;
+    min-height: 0;
+}
+
+/* === GRID CONTAINERS === */
+.user-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+/* === SECTION DIVIDER === */
+.section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+    margin: 25px 0;
+}

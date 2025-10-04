@@ -1,0 +1,178 @@
+/* ==========================================================================
+   DIÁLOGOS Y MODALES
+   ========================================================================== */
+
+/* === DIALOG BASE === */
+dialog { 
+    padding: 0; 
+    border: 1px solid var(--border-color); 
+    background-color: var(--panel); 
+    border-radius: var(--border-radius); 
+    box-shadow: var(--shadow-lg);
+    max-width: 90vw;
+    max-height: 90vh;
+}
+
+dialog::backdrop { 
+    background-color: rgba(11, 11, 16, 0.7); 
+    backdrop-filter: blur(8px);
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* === DIALOG MODERNO === */
+.dialog-modern {
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideUp {
+    from { 
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* === DIALOG CARD === */
+.dialog-card { 
+    padding: 30px; 
+    min-width: 400px;
+    color: var(--text);
+    position: relative;
+}
+
+.dialog-card.dialog-large {
+    min-width: 600px;
+}
+
+.dialog-card h3 { 
+    margin: 0 0 10px 0; 
+    font-weight: 600;
+    font-size: 1.4em;
+}
+
+/* === DIALOG HEADER === */
+.dialog-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.dialog-description {
+    color: var(--muted);
+    margin-bottom: 20px;
+    font-size: 0.95em;
+}
+
+/* === DIALOG ACTIONS === */
+.dialog-actions { 
+    display: flex; 
+    justify-content: flex-end; 
+    gap: 10px; 
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+/* === EMERGENCY DIALOG === */
+.emergency-header {
+    background: linear-gradient(135deg, rgba(45, 125, 255, 0.1), rgba(255, 59, 48, 0.1));
+    border-radius: var(--border-radius-sm);
+    padding: 20px !important;
+}
+
+.emergency-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5em;
+    flex-shrink: 0;
+}
+
+.emergency-icon.accidente {
+    background: rgba(255, 59, 48, 0.2);
+}
+
+.emergency-icon.en-camino,
+.emergency-icon.en_camino {
+    background: rgba(255, 149, 0, 0.2);
+}
+
+/* === STATUS BANNER === */
+.status-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-radius: var(--border-radius-sm);
+    margin-bottom: 20px;
+}
+
+.status-banner.status-accidente {
+    background: rgba(255, 59, 48, 0.1);
+    border: 1px solid rgba(255, 59, 48, 0.3);
+}
+
+.status-banner.status-en-camino,
+.status-banner.status-en_camino {
+    background: rgba(255, 149, 0, 0.1);
+    border: 1px solid rgba(255, 149, 0, 0.3);
+}
+
+.elapsed-badge {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+/* === ALERT INFO === */
+.alert-info {
+    background: linear-gradient(135deg, rgba(0, 255, 157, 0.1), rgba(45, 125, 255, 0.1));
+    border: 1px solid var(--brand1);
+    padding: 15px;
+    border-radius: var(--border-radius-sm);
+    margin-bottom: 20px;
+    font-size: 0.95em;
+}
+
+.alert-warning {
+    background: rgba(255, 149, 0, 0.1);
+    border: 1px solid var(--orange);
+    padding: 15px;
+    border-radius: var(--border-radius-sm);
+    margin-bottom: 20px;
+    font-size: 0.95em;
+}
+
+.alert-danger {
+    background: rgba(255, 59, 48, 0.1);
+    border: 1px solid var(--red);
+    padding: 15px;
+    border-radius: var(--border-radius-sm);
+    margin-bottom: 20px;
+    font-size: 0.95em;
+}
+
+.alert-success {
+    background: rgba(48, 209, 88, 0.1);
+    border: 1px solid var(--green);
+    padding: 15px;
+    border-radius: var(--border-radius-sm);
+    margin-bottom: 20px;
+    font-size: 0.95em;
+}

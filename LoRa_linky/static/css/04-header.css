@@ -1,0 +1,145 @@
+/* ==========================================================================
+   HEADER Y NAVEGACIÓN
+   ========================================================================== */
+
+/* === APP HEADER === */
+.app-header {
+    height: 80px;
+    padding: 0 var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--panel);
+    border-bottom: 1px solid var(--border-color);
+    gap: 20px;
+    position: relative;
+    z-index: var(--z-header);
+}
+
+/* === BRAND === */
+.brand { 
+    display: flex; 
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.brand h1 { 
+    margin: 0; 
+    font-size: 1.4em; 
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--brand2), var(--brand1));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* === LOGO === */
+.logo-dot { 
+    width: 12px; 
+    height: 12px; 
+    background: linear-gradient(135deg, var(--brand2), var(--brand1));
+    border-radius: 50%; 
+    box-shadow: 0 0 15px var(--brand1);
+    animation: pulse-logo 2s ease-in-out infinite;
+}
+
+@keyframes pulse-logo {
+    0%, 100% { 
+        transform: scale(1); 
+        box-shadow: 0 0 15px var(--brand1);
+    }
+    50% { 
+        transform: scale(1.1); 
+        box-shadow: 0 0 25px var(--brand1);
+    }
+}
+
+/* === RELOJ EN TIEMPO REAL === */
+.live-clock-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, rgba(45, 125, 255, 0.1), rgba(0, 255, 157, 0.1));
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-color);
+    min-width: 200px;
+    flex-shrink: 0;
+}
+
+.live-clock {
+    font-size: 1.8em;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    font-variant-numeric: tabular-nums;
+    background: linear-gradient(135deg, var(--brand1), var(--brand2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.live-date {
+    font-size: 0.85em;
+    color: var(--muted);
+    margin-top: 2px;
+    font-weight: 500;
+}
+
+.timezone-label {
+    font-size: 0.7em;
+    color: var(--muted);
+    opacity: 0.7;
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* === ESTADÍSTICAS DEL DASHBOARD === */
+.dashboard-stats { 
+    display: flex; 
+    gap: 30px;
+    flex-shrink: 0;
+}
+
+.stat-item { 
+    display: flex; 
+    flex-direction: column;
+    align-items: center; 
+    gap: 5px;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-color);
+    transition: var(--transition-smooth);
+}
+
+.stat-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-2px);
+}
+
+.stat-number { 
+    font-size: 2em; 
+    font-weight: 700; 
+    line-height: 1;
+}
+
+.stat-item.stat-danger .stat-number { color: var(--red); }
+.stat-item.stat-success .stat-number { color: var(--green); }
+.stat-item.stat-info .stat-number { color: var(--blue); }
+
+.stat-label { 
+    font-size: 0.85em; 
+    color: var(--muted); 
+    line-height: 1.2;
+    text-align: center;
+}
+
+/* === ACCIONES DEL HEADER === */
+.header-actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}

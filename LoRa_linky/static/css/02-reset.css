@@ -1,0 +1,88 @@
+/* ==========================================================================
+   RESET Y ESTILOS BASE
+   ========================================================================== */
+
+/* === RESET UNIVERSAL === */
+* { 
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* === HTML === */
+html { 
+    scroll-behavior: smooth; 
+    font-size: var(--font-size-base);
+}
+
+/* === BODY === */
+body {
+    background: 
+        radial-gradient(1200px 600px at 10% -10%, rgba(45, 125, 255, .1), transparent 70%),
+        radial-gradient(1200px 600px at 110% 0%, rgba(155, 92, 255, .1), transparent 70%),
+        var(--bg);
+    color: var(--text);
+    font-family: var(--font-family);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* === SCROLLBAR PERSONALIZADO === */
+
+/* Webkit Browsers */
+::-webkit-scrollbar { 
+    width: 8px; 
+    height: 8px;
+}
+
+::-webkit-scrollbar-track { 
+    background: transparent; 
+}
+
+::-webkit-scrollbar-thumb { 
+    background-color: var(--border-color); 
+    border-radius: 4px; 
+}
+
+::-webkit-scrollbar-thumb:hover { 
+    background-color: var(--muted); 
+}
+
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+/* === TRANSICIONES GLOBALES === */
+a, button, input, select, textarea {
+    transition: var(--transition-smooth);
+}
+
+/* === ACCESIBILIDAD === */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* === FOCUS VISIBLE === */
+:focus-visible {
+    outline: 2px solid var(--brand2);
+    outline-offset: 2px;
+}
+
+/* === PRINT STYLES === */
+@media print {
+    body {
+        background: white;
+        color: black;
+    }
+}
