@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analíticas - LoRaLink</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='analytics.css') }}" />
+</head>
+<body>
+    <header class="app-header">
+        <div class="brand">
+            <div class="logo-dot"></div>
+            <h1>LoRaLink Analíticas</h1>
+        </div>
+
+        <div class="header-actions">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                <span>←</span> Volver al Dashboard
+            </a>
+            <button id="btn-refresh-analytics" class="btn primary">
+                <span>🔄</span> Actualizar
+            </button>
+        </div>
+    </header>
+
+    <main class="analytics-container">
+        <!-- Métricas Generales -->
+        <section class="metrics-grid">
+            <div class="metric-card metric-primary">
+                <div class="metric-icon">📊</div>
+                <div class="metric-content">
+                    <div class="metric-value" id="total-emergencies">0</div>
+                    <div class="metric-label">Total de Emergencias</div>
+                </div>
+            </div>
+
+            <div class="metric-card metric-danger">
+                <div class="metric-icon">🚨</div>
+                <div class="metric-content">
+                    <div class="metric-value" id="active-emergencies">0</div>
+                    <div class="metric-label">Emergencias Activas</div>
+                </div>
+            </div>
+
+            <div class="metric-card metric-success">
+                <div class="metric-icon">✓</div>
+                <div class="metric-content">
+                    <div class="metric-value" id="resolved-emergencies">0</div>
+                    <div class="metric-label">Emergencias Resueltas</div>
+                </div>
+            </div>
+
+            <div class="metric-card metric-info">
+                <div class="metric-icon">⏱️</div>
+                <div class="metric-content">
+                    <div class="metric-value" id="avg-response">0 min</div>
+                    <div class="metric-label">Tiempo Promedio</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Estadísticas Temporales -->
+        <section class="stats-temporal">
+            <div class="card">
+                <h3>📅 Estadísticas Temporales</h3>
+                <div class="temporal-grid">
+                    <div class="temporal-item">
+                        <span class="temporal-label">Hoy</span>
+                        <span class="temporal-value" id="today-count">0</span>
+                    </div>
+                    <div class="temporal-item">
+                        <span class="temporal-label">Esta Semana</span>
+                        <span class="temporal-value" id="week-count">0</span>
+                    </div>
+                    <div class="temporal-item">
+                        <span class="temporal-label">Este Mes</span>
+                        <span class="temporal-value" id="month-count">0</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Distribución por Tipo -->
+        <section class="distribution-section">
+            <div class="card">
+                <h3>📈 Distribución por Tipo de Incidente</h3>
+                <div id="type-distribution" class="distribution-list">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🚑 Eficiencia de Unidades</h3>
+                <div id="unit-efficiency" class="efficiency-list">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Distribución Horaria -->
+        <section class="hourly-section">
+            <div class="card card-wide">
+                <h3>🕐 Distribución Horaria de Emergencias</h3>
+                <div id="hourly-chart" class="hourly-chart">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Mapa de Calor (Zonas con más emergencias) -->
+        <section class="heatmap-section">
+            <div class="card card-wide">
+                <h3>🗺️ Zonas con Mayor Incidencia</h3>
+                <div id="heatmap-zones" class="zones-grid">
+                    <div class="loading-spinner"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="{{ url_for('static', filename='js/analytics-page.js') }}"></script>
+</body>
+</html>

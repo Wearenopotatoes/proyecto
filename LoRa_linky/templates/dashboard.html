@@ -2,14 +2,16 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard de Emergencias LoRaLink</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='notifications.css') }}" />
 </head>
 <body>
     <header class="app-header">
@@ -18,35 +20,82 @@
             <h1>LoRaLink Dashboard</h1>
         </div>
 
-        <div class="dashboard-stats">
-        <div class="stat-item">
-            <span id="active-alerts-count" class="stat-number">0</span>
-            <span class="stat-label">Reportes Activos</span>
+        <!-- RELOJ EN TIEMPO REAL (GMT-6) -->
+        <div class="live-clock-container">
+            <div id="live-clock" class="live-clock">00:00:00</div>
+            <div id="live-date" class="live-date">-- -- ---</div>
+            <div class="timezone-label">GMT-6 (El Salvador)</div>
         </div>
 
-        <div class="search-wrapper">
-        <input type="search" id="search-input" placeholder="Buscar por usuario o tipo...">
+        <div class="dashboard-stats">
+            <div class="stat-item stat-danger">
+                <span id="active-alerts-count" class="stat-number">0</span>
+                <span class="stat-label">Reportes Activos</span>
+            </div>
+            
+            <div class="stat-item stat-success">
+                <span id="available-units-count" class="stat-number">0</span>
+                <span class="stat-label">Unidades Disponibles</span>
+            </div>
         </div>
         
-        <div class="stat-item">
-            <span id="available-units-count" class="stat-number">0</span>
-            <span class="stat-label">Unidades Disponibles</span>
-        </div>
-        </div>
-        
-        <div>
-        <a href="{{ url_for('units_management') }}" class="btn primary">Gestionar Unidades</a>
-        <button id="clear-alerts-btn" class="btn danger">Limpiar Todo</button>
+        <div class="header-actions">
+            <button id="btn-export-csv" class="btn btn-secondary" title="Exportar datos a CSV">
+                <span>📊</span> Exportar
+            </button>
+            <a href="{{ url_for('units_management') }}" class="btn primary">
+                <span>🚑</span> Gestionar Unidades
+            </a>
         </div>
     </header>
 
     <main class="layout">
+        <!-- Panel del Mapa -->
         <div class="map-panel">
+            <div class="panel-header">
+                <h2>Mapa de Emergencias</h2>
+                <div class="map-legend">
+                    <div class="legend-item">
+                        <span class="legend-dot marker-red"></span>
+                        <span>Pendiente</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot marker-orange"></span>
+                        <span>En camino</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot marker-blue"></span>
+                        <span>Unidad disponible</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot marker-purple"></span>
+                        <span>Unidad ocupada</span>
+                    </div>
+                </div>
+            </div>
             <div id="map"></div>
         </div>
+
+        <!-- Panel de Tabla -->
         <div class="table-panel">
             <div class="panel-header">
                 <h2>Reportes Activos</h2>
+                <div class="filter-group">
+                    <input 
+                        type="search" 
+                        id="search-input" 
+                        placeholder="🔍 Buscar..."
+                        class="search-input"
+                    >
+                    <select id="filter-status" class="filter-select">
+                        <option value="all">Todos los estados</option>
+                        <option value="1">Pendientes</option>
+                        <option value="2">En camino</option>
+                    </select>
+                    <select id="filter-type" class="filter-select">
+                        <option value="all">Todos los tipos</option>
+                    </select>
+                </div>
             </div>
             <div class="table-wrap">
                 <table class="grid">
@@ -54,50 +103,64 @@
                         <tr>
                             <th>Tipo</th>
                             <th>Estado</th>
-                            <th>Unidades</th>
+                            <th>Unidad</th>
                             <th>Usuario</th>
-                            <th>Hora</th>
+                            <th>Tiempo</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="alerts-table-body">
+                        <tr>
+                            <td colspan="7" style="text-align:center; padding: 40px;">
+                                <div class="loading-spinner"></div>
+                                <div style="margin-top: 20px;">Cargando datos...</div>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </main>
 
-    <!-- Pop-up para asignar unidades (sin cambios) -->
-    <dialog id="assign-unit-dialog">
+    <!-- Diálogo: Asignar Unidad -->
+    <dialog id="assign-unit-dialog" class="dialog-modern">
         <div class="dialog-card">
-            <h3>Asignar Unidad</h3>
+            <button class="btn-close" onclick="this.closest('dialog').close()">×</button>
+            <h3>🚑 Asignar Unidad de Emergencia</h3>
+            <p class="dialog-description">Selecciona la unidad más cercana y disponible</p>
             <div class="field">
-                <label for="select-unit">Unidades disponibles</label>
-                <select id="select-unit"></select>
+                <label for="select-unit">Unidad disponible</label>
+                <select id="select-unit" class="select-modern">
+                    <option>Cargando unidades...</option>
+                </select>
             </div>
             <div class="dialog-actions">
                 <button id="btn-cancel-assign" class="btn">Cancelar</button>
-                <button id="btn-confirm-assign" class="btn primary">Confirmar</button>
+                <button id="btn-confirm-assign" class="btn primary">
+                    <span>✓</span> Confirmar Asignación
+                </button>
             </div>
         </div>
     </dialog>
 
-    <!-- NUEVO: Pop-up para detalles del usuario -->
-    <dialog id="user-details-dialog">
-        <div class="dialog-card" id="user-details-content">
-            <!-- El contenido será generado por JavaScript -->
-            Cargando información del usuario...
+    <!-- Diálogo: Detalles de Usuario -->
+    <dialog id="user-details-dialog" class="dialog-modern">
+        <div class="dialog-card dialog-large" id="user-details-content">
+            <div class="loading-spinner"></div>
+            <h3>Cargando información del usuario...</h3>
         </div>
     </dialog>
-    <!-- NUEVO: Pop-up para detalles de la emergencia -->
-    <dialog id="emergency-details-dialog">
-         <div class="dialog-card" id="emergency-details-content">
-             <h3>Cargando detalles de la emergencia...</h3>
-         </div>
+
+    <!-- Diálogo: Detalles de Emergencia -->
+    <dialog id="emergency-details-dialog" class="dialog-modern">
+        <div class="dialog-card dialog-large" id="emergency-details-content">
+            <div class="loading-spinner"></div>
+            <h3>Cargando detalles de la emergencia...</h3>
+        </div>
     </dialog>
 
+    <!-- Scripts -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
-
 </body>
 </html>
