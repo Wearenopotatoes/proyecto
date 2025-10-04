@@ -1,4 +1,4 @@
-// analytics-page.js - Dashboard de analíticas avanzadas
+// analytics-page.js - Dashboard de analíticas avanzadas (CORREGIDO)
 
 import { apiFetch } from './apiService.js';
 import { CONFIG } from './config.js';
@@ -26,16 +26,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadAnalytics() {
         try {
+            console.log('🔄 Cargando datos de analytics...');
+            
             // Cargar datos
             const [emergencies, baseUnits] = await Promise.all([
                 apiFetch('/emergencies'),
                 apiFetch('/emergency-units')
             ]);
 
+            console.log('✅ Emergencias cargadas:', emergencies?.length || 0);
+            console.log('✅ Unidades cargadas:', baseUnits?.length || 0);
+
             // Cargar stats de unidades
             const statsPromises = baseUnits.map(unit =>
                 apiFetch(`/emergency-units/${unit.emergency_unit_id}/stats`)
-                .catch(() => ({ active_emergencies: 0 }))
+                .catch((err) => {
+                    console.warn(`⚠️ Error al cargar stats de unidad ${unit.emergency_unit_id}:`, err);
+                    return { active_emergencies: 0 };
+                })
             );
             const allStats = await Promise.all(statsPromises);
             const units = baseUnits.map((unit, index) => ({
@@ -54,8 +62,11 @@ document.addEventListener('DOMContentLoaded', () => {
             renderHourlyChart();
             renderHeatmapZones();
 
+            console.log('✅ Analytics renderizadas correctamente');
+
         } catch (error) {
-            console.error('Error al cargar analíticas:', error);
+            console.error('❌ Error al cargar analíticas:', error);
+            showError('Error al cargar los datos. Por favor, recarga la página.');
         }
     }
 
@@ -195,6 +206,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function animateCounter(element, target) {
+        if (!element) return;
+        
         const duration = 1000;
         const start = 0;
         const increment = target / (duration / 16);
@@ -211,12 +224,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 16);
     }
 
+    function showError(message) {
+        [typeDistributionEl, unitEfficiencyEl, hourlyChartEl, heatmapZonesEl].forEach(el => {
+            if (el) {
+                el.innerHTML = `<p class="empty-state" style="color: #ff3b30;">${message}</p>`;
+            }
+        });
+    }
+
     // Event listeners
-    btnRefresh.onclick = loadAnalytics;
+    if (btnRefresh) {
+        btnRefresh.onclick = () => {
+            console.log('🔄 Refresh manual solicitado');
+            loadAnalytics();
+        };
+    }
 
     // Carga inicial
+    console.log('🚀 Iniciando carga de analytics...');
     loadAnalytics();
 
     // Auto-refresh cada 30 segundos
-    setInterval(loadAnalytics, CONFIG.REFRESH.ANALYTICS);
+    setInterval(() => {
+        console.log('🔄 Auto-refresh de analytics...');
+        loadAnalytics();
+    }, CONFIG.REFRESH.ANALYTICS);
 });
