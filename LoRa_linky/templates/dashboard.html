@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard de Emergencias LoRaLink</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+    <header class="app-header">
+        <div class="brand">
+            <div class="logo-dot"></div>
+            <h1>LoRaLink Dashboard</h1>
+        </div>
+
+        <div class="dashboard-stats">
+        <div class="stat-item">
+            <span id="active-alerts-count" class="stat-number">0</span>
+            <span class="stat-label">Reportes Activos</span>
+        </div>
+
+        <div class="search-wrapper">
+        <input type="search" id="search-input" placeholder="Buscar por usuario o tipo...">
+        </div>
+        
+        <div class="stat-item">
+            <span id="available-units-count" class="stat-number">0</span>
+            <span class="stat-label">Unidades Disponibles</span>
+        </div>
+        </div>
+        
+        <div>
+        <a href="{{ url_for('units_management') }}" class="btn primary">Gestionar Unidades</a>
+        <button id="clear-alerts-btn" class="btn danger">Limpiar Todo</button>
+        </div>
+    </header>
+
+    <main class="layout">
+        <div class="map-panel">
+            <div id="map"></div>
+        </div>
+        <div class="table-panel">
+            <div class="panel-header">
+                <h2>Reportes Activos</h2>
+            </div>
+            <div class="table-wrap">
+                <table class="grid">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Estado</th>
+                            <th>Unidades</th>
+                            <th>Usuario</th>
+                            <th>Hora</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="alerts-table-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Pop-up para asignar unidades (sin cambios) -->
+    <dialog id="assign-unit-dialog">
+        <div class="dialog-card">
+            <h3>Asignar Unidad</h3>
+            <div class="field">
+                <label for="select-unit">Unidades disponibles</label>
+                <select id="select-unit"></select>
+            </div>
+            <div class="dialog-actions">
+                <button id="btn-cancel-assign" class="btn">Cancelar</button>
+                <button id="btn-confirm-assign" class="btn primary">Confirmar</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- NUEVO: Pop-up para detalles del usuario -->
+    <dialog id="user-details-dialog">
+        <div class="dialog-card" id="user-details-content">
+            <!-- El contenido será generado por JavaScript -->
+            Cargando información del usuario...
+        </div>
+    </dialog>
+    <!-- NUEVO: Pop-up para detalles de la emergencia -->
+    <dialog id="emergency-details-dialog">
+         <div class="dialog-card" id="emergency-details-content">
+             <h3>Cargando detalles de la emergencia...</h3>
+         </div>
+    </dialog>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script type="module" src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+</body>
+</html>

@@ -6,22 +6,19 @@ function traducirStatus(statusId) {
 }
 
 export function renderTable(tableBody, alerts) {
+    // ... (El resto de la función no cambia)
     tableBody.innerHTML = '';
-    
     const activeAlerts = alerts.filter(alert => alert.status !== 3);
-
     if (!activeAlerts.length) {
         tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No hay reportes activos.</td></tr>`;
         return;
     }
-    
     activeAlerts.forEach(alert => {
         const statusText = traducirStatus(alert.status);
         const typeText = alert.accident_type?.description || 'N/A';
         const userName = alert.user?.name || 'N/A';
         const userId = alert.user?.user_id;
         const assignedUnit = alert.assigned_unit_rel;
-        
         const row = document.createElement('tr');
         row.id = `row-${alert.emergency_id}`;
 
@@ -30,7 +27,9 @@ export function renderTable(tableBody, alerts) {
             <td><span class="badge ${statusText.replace('_', '-')}">${statusText}</span></td>
             <td>${assignedUnit ? `<span class="unit-tag">${assignedUnit.name}</span>` : '<span class="muted">N/A</span>'}</td>
             <td>${userId ? `<a class="user-link" data-user-id="${userId}">${userName}</a>` : `<span class="muted">${userName}</span>`}</td>
-            <td class="muted">${new Date(alert.timestamp).toLocaleString('es-SV')}</td>
+            
+            <td class="muted">${new Date(alert.timestamp + 'Z').toLocaleString('es-SV', { timeZone: 'America/El_Salvador', hour12: false })}</td>
+            
             <td class="actions">
                 <button class="btn btn-details" data-id="${alert.emergency_id}">Ver</button>
                 <button class="btn btn-primary btn-asignar" data-id="${alert.emergency_id}">Asignar</button>
@@ -63,12 +62,21 @@ export function renderUserDetails(contentElement, user, kinCatalog) {
     document.getElementById('close-user-dialog-btn').onclick = () => contentElement.parentElement.close();
 }
 
+// En js/uiRenderer.js
+
 export function renderEmergencyDetails(contentElement, details) {
     const statusText = traducirStatus(details.status);
     const typeText = details.accident_type?.description || 'N/A';
     const userName = details.user?.name || 'N/A';
     const unitName = details.assigned_unit_rel?.name || 'Ninguna asignada';
-    const timestamp = new Date(details.timestamp).toLocaleString('es-SV', { dateStyle: 'long', timeStyle: 'short' });
+    
+    // CAMBIO AQUÍ: Se añade 'Z' para indicar que es UTC y hour12: false a las opciones
+    const timestamp = new Date(details.timestamp + 'Z').toLocaleString('es-SV', { 
+        dateStyle: 'long', 
+        timeStyle: 'short',
+        timeZone: 'America/El_Salvador',
+        hour12: false 
+    });
 
     contentElement.innerHTML = `
         <button class="btn-close" id="close-emergency-details-btn">X</button>
