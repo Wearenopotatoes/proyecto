@@ -5,13 +5,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Offline - LoRaLink</title>
     
-    <!-- Leaflet para mapas -->
+    <!-- MapLibre GL JS para teselas vectoriales -->
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" />
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+    
+    <!-- Leaflet Marker Cluster (para los marcadores) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
     
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/offline_style.css') }}" />
+    
+    <style>
+        #map { 
+            width: 100%; 
+            height: 100%; 
+        }
+        
+        /* Estilos para los marcadores personalizados */
+        .marker-icon {
+            background: white;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            cursor: pointer;
+        }
+        
+        .marker-icon.status-accidente {
+            border: 3px solid #dc3545;
+        }
+        
+        .marker-icon.status-en_camino {
+            border: 3px solid #fd7e14;
+        }
+        
+        .marker-icon.status-resuelto {
+            border: 3px solid #28a745;
+        }
+        
+        /* Estilos para popups */
+        .maplibregl-popup-content {
+            padding: 0;
+            border-radius: 8px;
+        }
+        
+        .marker-popup {
+            min-width: 200px;
+        }
+        
+        .popup-header {
+            background: #2c3e50;
+            color: white;
+            padding: 10px;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .popup-body {
+            padding: 10px;
+        }
+        
+        .popup-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            font-size: 13px;
+        }
+        
+        .popup-label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
 </head>
 <body>
     <!-- Cabecera del Dashboard Offline -->
@@ -24,7 +94,7 @@
         
         <div class="header-info">
             <div class="clock" id="current-time">--:--:--</div>
-            <button class="btn btn-primary" id="btn-load-csv">📁 Cargar CSV</button>
+            <button class="btn btn-primary" id="btn-load-csv">📂 Cargar CSV</button>
             <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
             <a href="/dashboard.html" class="btn btn-secondary">Ir a Dashboard Online</a>
         </div>
@@ -153,9 +223,7 @@
         </div>
     </dialog>
 
-    <!-- Scripts -->
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
-    <script src="{{ url_for('static', filename='js/offline_script.js') }}"></script>
+    <!-- Script principal modular -->
+    <script type="module" src="{{ url_for('static', filename='offlineJS/offline_bundle.js') }}"></script>
 </body>
 </html>
