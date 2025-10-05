@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Offline - LoRaLink</title>
+    
+    <!-- Leaflet para mapas -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+    
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/offline_style.css') }}" />
+</head>
+<body>
+    <!-- Cabecera del Dashboard Offline -->
+    <header class="app-header">
+        <div class="brand">
+            <div class="logo-dot offline-indicator"></div>
+            <h1>LoRaLink Dashboard</h1>
+            <span class="mode-badge">MODO OFFLINE</span>
+        </div>
+        
+        <div class="header-info">
+            <div class="clock" id="current-time">--:--:--</div>
+            <button class="btn btn-primary" id="btn-load-csv">📁 Cargar CSV</button>
+            <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+            <a href="/dashboard.html" class="btn btn-secondary">Ir a Dashboard Online</a>
+        </div>
+    </header>
+
+    <!-- Panel de Estadísticas -->
+    <section class="stats-panel">
+        <div class="stat-card">
+            <div class="stat-icon">🚨</div>
+            <div class="stat-content">
+                <div class="stat-value" id="total-alerts">0</div>
+                <div class="stat-label">Total de Alertas</div>
+            </div>
+        </div>
+
+        <div class="stat-card accent-red">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-content">
+                <div class="stat-value" id="active-alerts">0</div>
+                <div class="stat-label">Alertas Activas</div>
+            </div>
+        </div>
+
+        <div class="stat-card accent-orange">
+            <div class="stat-icon">🚑</div>
+            <div class="stat-content">
+                <div class="stat-value" id="enroute-alerts">0</div>
+                <div class="stat-label">En Camino</div>
+            </div>
+        </div>
+
+        <div class="stat-card accent-green">
+            <div class="stat-icon">✅</div>
+            <div class="stat-content">
+                <div class="stat-value" id="resolved-alerts">0</div>
+                <div class="stat-label">Resueltas</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Layout Principal -->
+    <main class="layout">
+        <!-- Panel del Mapa -->
+        <div class="map-panel">
+            <div class="map-header">
+                <h2>Mapa de Emergencias</h2>
+                <div class="map-legend">
+                    <span class="legend-item"><span class="legend-dot red"></span> Activa</span>
+                    <span class="legend-item"><span class="legend-dot orange"></span> En Camino</span>
+                    <span class="legend-item"><span class="legend-dot green"></span> Resuelta</span>
+                </div>
+            </div>
+            <div id="map"></div>
+        </div>
+
+        <!-- Panel de la Tabla -->
+        <div class="table-panel">
+            <div class="panel-header">
+                <h2>Reportes Recientes</h2>
+                <div class="panel-controls">
+                    <button class="btn btn-small" id="btn-refresh">🔄 Actualizar</button>
+                    <button class="btn btn-small" id="btn-export">📥 Exportar</button>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="filters-bar">
+                <select id="filter-status" class="filter-select">
+                    <option value="all">Todos los estados</option>
+                    <option value="accidente">Activos</option>
+                    <option value="en_camino">En Camino</option>
+                    <option value="resuelto">Resueltos</option>
+                </select>
+
+                <select id="filter-type" class="filter-select">
+                    <option value="all">Todos los tipos</option>
+                    <option value="1">Colisión</option>
+                    <option value="2">Incendio</option>
+                    <option value="3">Derrumbe</option>
+                    <option value="4">Inundación</option>
+                    <option value="5">Otro</option>
+                </select>
+
+                <input type="text" id="search-box" class="search-input" placeholder="Buscar por ID o unidad...">
+            </div>
+
+            <!-- Tabla de Alertas -->
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Estado</th>
+                            <th>Unidad</th>
+                            <th>Hora</th>
+                            <th>Tiempo Transcurrido</th>
+                            <th>Ubicación</th>
+                        </tr>
+                    </thead>
+                    <tbody id="alerts-table-body">
+                        <tr>
+                            <td colspan="6" class="loading-row">Cargando datos...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pie de la tabla -->
+            <div class="table-footer">
+                <span id="table-count">Mostrando 0 de 0 alertas</span>
+                <span id="last-update">Última actualización: --:--:--</span>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de información detallada -->
+    <dialog id="detail-dialog">
+        <div class="dialog-card">
+            <div class="dialog-header">
+                <h3>Detalles de la Alerta</h3>
+                <button class="btn-close" id="btn-close-detail">✕</button>
+            </div>
+            <div class="dialog-body" id="detail-content">
+                <!-- Contenido dinámico -->
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+    <script src="{{ url_for('static', filename='js/offline_script.js') }}"></script>
+</body>
+</html>
